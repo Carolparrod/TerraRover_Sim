@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c6ac12907ff67f4cabf3de8cc885597, type: 3}
+  m_Name: Dificultad_Facil
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainFamily
+  noiseScale: 0.1
+  noiseAmplitude: 0.3
+  maxSlopeDegrees: 4.4
+  obstacleDensity: 0.02
+  obstaclePrefabs:
+  - {fileID: 919132149155446097, guid: 445043dfb98d162479afd32ad7d07d8f, type: 3}
+  - {fileID: 919132149155446097, guid: 79430a3bac52fdf4883620bfa06b0a5b, type: 3}
+  - {fileID: 919132149155446097, guid: 7d1954e3a9a9f704ab4b0a7b901d8256, type: 3}
