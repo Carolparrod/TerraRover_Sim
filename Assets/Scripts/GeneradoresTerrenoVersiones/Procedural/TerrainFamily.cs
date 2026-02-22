@@ -13,4 +13,7 @@ public class TerrainFamily : ScriptableObject
     [Header("Obstáculos")]
     public float obstacleDensity = 0.05f; // 0.05 = 5% de probabilidad
     public GameObject[] obstaclePrefabs;  // Arrastra aquí tus prefabs de rocas
+    //////////////////////////////////
+    ///
+    
 }

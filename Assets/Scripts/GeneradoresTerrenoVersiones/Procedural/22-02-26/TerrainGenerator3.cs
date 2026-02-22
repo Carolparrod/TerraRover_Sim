@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class TerrainGenerator2 : MonoBehaviour
+public class TerrainGenerator3 : MonoBehaviour
 {
     public TerrainFamily terrainFamily;
     private Terrain terrain;
@@ -9,15 +9,17 @@ public class TerrainGenerator2 : MonoBehaviour
     private List<GameObject> spawnedObstacles = new List<GameObject>();
     public GameObject huskyRobot;
 
-    // Puntos de inicio y meta lógicos para el corredor seguro
+    [Header("Puntos de Navegación")]
     public Transform startPoint;
     public Transform goalPoint;
-    //public float safeCorridorWidth = 3.0f; // Ancho libre de obstáculos
-    public float safeCorridorWidth = 1.5f;
+
+    [Header("Zonas de Exclusión (Radios)")]
+    public float startClearRadius = 3.0f;
+    public float goalClearRadius = 3.0f;
+
     void Awake()
     {
         terrain = GetComponent<Terrain>();
-        // Clonamos el TerrainData para no modificar el asset original en el editor
         terrainData = Instantiate(terrain.terrainData);
         terrain.terrainData = terrainData;
         GetComponent<TerrainCollider>().terrainData = terrainData;
@@ -31,26 +33,19 @@ public class TerrainGenerator2 : MonoBehaviour
         int res = terrainData.heightmapResolution;
         float[,] heights = new float[res, res];
 
-        // 1. Generar Alturas
+        // 1. Generar Alturas (Terreno 100% Salvaje)
         for (int i = 0; i < res; i++)
         {
             for (int j = 0; j < res; j++)
             {
-                // Coordenadas del mundo para este punto del grid
-                float worldX = ((float)i / res) * terrainData.size.x;
-                float worldZ = ((float)j / res) * terrainData.size.z;
-
-                // Calcular factor del corredor seguro (0 = dentro del centro del pasillo, 1 = fuera)
-                float corridorFactor = GetCorridorFactor(worldX, worldZ);
-
                 float xCoord = (float)i / res * terrainFamily.noiseScale + seed;
                 float yCoord = (float)j / res * terrainFamily.noiseScale + seed;
 
-                // Atenuamos el ruido base dentro del corredor seguro
-                float noise = Mathf.PerlinNoise(xCoord, yCoord) * terrainFamily.noiseAmplitude * corridorFactor;
-                float detailNoise = Mathf.PerlinNoise(xCoord * 10, yCoord * 10) * (terrainFamily.noiseAmplitude * 0.2f) * corridorFactor;
+                // Ruido base y micro-rugosidad puros, sin atenuar por ningún pasillo
+                float noise = Mathf.PerlinNoise(xCoord, yCoord) * terrainFamily.noiseAmplitude;
+                float detailNoise = Mathf.PerlinNoise(xCoord * 10, yCoord * 10) * (terrainFamily.noiseAmplitude * 0.2f);
 
-                //float slope = (i / (float)res) * Mathf.Tan(terrainFamily.maxSlopeDegrees * Mathf.Deg2Rad) * 2;
+                // Pendiente ajustada al tamaño real del terreno
                 float slope = (i / (float)res) * terrainData.size.x * Mathf.Tan(terrainFamily.maxSlopeDegrees * Mathf.Deg2Rad);
 
                 heights[j, i] = Mathf.Clamp01((noise + detailNoise + slope) / terrainData.size.y);
@@ -58,7 +53,7 @@ public class TerrainGenerator2 : MonoBehaviour
         }
         terrainData.SetHeights(0, 0, heights);
 
-        // 2. Generar Obstáculos (respetando el pasillo)
+        // 2. Generar Obstáculos
         SpawnObstacles(seed);
 
         // 3. Posicionar el robot
@@ -68,14 +63,25 @@ public class TerrainGenerator2 : MonoBehaviour
     void SpawnObstacles(int seed)
     {
         Vector3 terrainSize = terrainData.size;
+
+        Vector2 startPos2D = startPoint != null ? new Vector2(startPoint.localPosition.x, startPoint.localPosition.z) : Vector2.zero;
+        Vector2 goalPos2D = goalPoint != null ? new Vector2(goalPoint.localPosition.x, goalPoint.localPosition.z) : Vector2.zero;
+
         for (float x = 2; x < terrainSize.x - 2; x += 2f)
         {
             for (float z = 2; z < terrainSize.z - 2; z += 2f)
             {
-                // Comprobamos si la posición está dentro del corredor seguro
-                if (GetCorridorFactor(x, z) < 0.9f)
-                    continue; // Saltar generación aquí para dejar el camino libre
+                Vector2 currentPos2D = new Vector2(x, z);
 
+                // Evitar generar rocas en el área de spawn del robot
+                if (startPoint != null && Vector2.Distance(currentPos2D, startPos2D) < startClearRadius)
+                    continue;
+
+                // Evitar generar rocas exactamente en la meta
+                if (goalPoint != null && Vector2.Distance(currentPos2D, goalPos2D) < goalClearRadius)
+                    continue;
+
+                // Generar obstáculo según la probabilidad de la TerrainFamily
                 if (Random.value < terrainFamily.obstacleDensity)
                 {
                     float y = terrain.SampleHeight(new Vector3(x + transform.position.x, 0, z + transform.position.z));
@@ -88,27 +94,6 @@ public class TerrainGenerator2 : MonoBehaviour
                 }
             }
         }
-    }
-
-    // Calcula si un punto está cerca de la línea recta entre el inicio y la meta
-    float GetCorridorFactor(float x, float z)
-    {
-        if (startPoint == null || goalPoint == null) return 1f;
-
-        Vector2 p = new Vector2(x, z);
-        Vector2 v = new Vector2(startPoint.localPosition.x, startPoint.localPosition.z);
-        Vector2 w = new Vector2(goalPoint.localPosition.x, goalPoint.localPosition.z);
-
-        // Distancia del punto a un segmento de línea
-        float l2 = (w - v).sqrMagnitude;
-        if (l2 == 0.0) return Mathf.Clamp01(Vector2.Distance(p, v) / safeCorridorWidth);
-
-        float t = Mathf.Max(0, Mathf.Min(1, Vector2.Dot(p - v, w - v) / l2));
-        Vector2 projection = v + t * (w - v);
-        float distance = Vector2.Distance(p, projection);
-
-        // Devuelve 0 en el centro del pasillo, y transiciona a 1 hacia los bordes
-        return Mathf.Clamp01(distance / safeCorridorWidth);
     }
 
     void ClearObstacles()
@@ -137,6 +122,21 @@ public class TerrainGenerator2 : MonoBehaviour
             rootBody.TeleportRoot(huskyRobot.transform.position, huskyRobot.transform.rotation);
             rootBody.linearVelocity = Vector3.zero;
             rootBody.angularVelocity = Vector3.zero;
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (startPoint != null)
+        {
+            Gizmos.color = new Color(0, 1, 0, 0.3f);
+            Gizmos.DrawSphere(startPoint.position, startClearRadius);
+        }
+
+        if (goalPoint != null)
+        {
+            Gizmos.color = new Color(1, 0, 0, 0.3f);
+            Gizmos.DrawSphere(goalPoint.position, goalClearRadius);
         }
     }
 }
