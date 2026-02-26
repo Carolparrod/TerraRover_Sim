@@ -35,7 +35,13 @@ public class HuskyAgent2 : Agent
 
     private int stuckCounter = 0;             // Contador interno
 
+    [Header("Pesos de Recompensa (OE5)")]
+    public float wAvance = 1.0f;
+    public float wEstabilidad = 0.05f;
+    public float wEnergia = 0.01f;
 
+    // Variable interna para calcular el avance
+    private float previousDistanceToTarget;
 
     public override void Initialize()
     {
@@ -194,8 +200,8 @@ public class HuskyAgent2 : Agent
         baseLink.linearVelocity = Vector3.zero;
         baseLink.angularVelocity = Vector3.zero;
 
-        // 4. Reposicionamos el objetivo
-        if (terrainGenerator != null && terrainGenerator.goalPoint != null)
+        // 4. Reposicionamos el objetivo 
+        /*if (terrainGenerator != null && terrainGenerator.goalPoint != null)
         {
             target.position = terrainGenerator.goalPoint.position;
         }
@@ -205,6 +211,39 @@ public class HuskyAgent2 : Agent
             float randomZ = Random.Range(10f, 30f);
             target.position = startPosition + new Vector3(randomX, 0, randomZ);
         }
+        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
+        // 4. Reposicionamos el objetivo (ajustando la z al nuevo terreno)
+        Vector3 newTargetPos;
+        if (terrainGenerator != null && terrainGenerator.goalPoint != null)
+        {
+            newTargetPos = terrainGenerator.goalPoint.position;
+        }
+        else
+        {
+            float randomX = Random.Range(-10f, 10f);
+            float randomZ = Random.Range(10f, 30f);
+            newTargetPos = startPosition + new Vector3(randomX, 0, randomZ);
+        }
+
+        // Magia topográfica: Leemos la altura exacta de la montaña en esa X y Z
+        if (terrainGenerator != null)
+        {
+            Terrain t = terrainGenerator.GetComponent<Terrain>();
+            if (t != null)
+            {
+                // SampleHeight devuelve la altura del terreno. Le sumamos la posición base del Terrain
+                float groundY = t.SampleHeight(newTargetPos) + t.transform.position.y;
+
+                // Le sumamos 0.5 metros extra para que la meta "flote" un poco y no se entierre
+                newTargetPos.y = groundY + 0.5f;
+            }
+        }
+
+        // Asignamos la posición final perfecta
+        target.position = newTargetPos;
+
+        // 5. Inicializamos la métrica
+        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -240,7 +279,11 @@ public class HuskyAgent2 : Agent
 
     private void FixedUpdate()
     {
-        // Verificamos las condiciones en cada ciclo de físicas
+
+        // 1. Damos los puntos continuos
+        CalculateDenseRewards();
+
+        // 2. Comprobamos si ha muerto o ganado (Sparse rewards)
         CheckTerminalStates();
     }
 
@@ -252,7 +295,8 @@ public class HuskyAgent2 : Agent
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
         if (distanceToTarget <= successDistance)
         {
-            SetReward(1.0f);
+            AddReward(1.0f);
+            Debug.Log($"[ÉXITO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
             EndEpisode();
         }
 
@@ -261,7 +305,8 @@ public class HuskyAgent2 : Agent
         // ------------------------------------------------------------------
         if (transform.up.y < 0.2f)
         {
-            SetReward(-1.0f);
+            AddReward(-1.0f);
+            Debug.Log($"[VUELCO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
             EndEpisode();
         }
 
@@ -270,7 +315,8 @@ public class HuskyAgent2 : Agent
         // ------------------------------------------------------------------
         if (transform.position.y < -5f)
         {
-            SetReward(-1.0f);
+            AddReward(-1.0f);
+            Debug.Log($"[CAÍDA] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
             EndEpisode();
         }
 
@@ -285,8 +331,8 @@ public class HuskyAgent2 : Agent
             if (stuckCounter >= maxStuckSteps)
             {
                 // Penalización severa por quedarse atascado
-                SetReward(-1.0f);
-                Debug.Log("¡Agente atascado! Reiniciando episodio...");
+                AddReward(-1.0f);
+                Debug.Log($"[ATASCO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
                 EndEpisode();
             }
         }
@@ -295,5 +341,31 @@ public class HuskyAgent2 : Agent
             // Si consigue moverse a una velocidad decente, reseteamos el contador
             stuckCounter = 0;
         }
+    }
+
+    private void CalculateDenseRewards()
+    {
+        // 1. TÉRMINO DE AVANCE (Proximity Reward)
+        float currentDistance = Vector3.Distance(transform.position, target.position);
+        float distanceDifference = previousDistanceToTarget - currentDistance;
+
+        // Premiamos si se ha acercado (positivo) o castigamos si se ha alejado (negativo)
+        float r_avance = distanceDifference * wAvance;
+        AddReward(r_avance);
+
+        // Actualizamos la variable para el siguiente frame
+        previousDistanceToTarget = currentDistance;
+
+        // 2. TÉRMINO DE ESTABILIDAD
+        // transform.up.y es 1 cuando está plano. Si es 0.8, la penalización es -0.2 * peso
+        float tiltPenalty = (1.0f - transform.up.y);
+        float r_estabilidad = -tiltPenalty * wEstabilidad;
+        AddReward(r_estabilidad);
+
+        // 3. TÉRMINO DE ENERGÍA (Eficiencia y suavidad)
+        // Penalizamos la velocidad angular alta (giros bruscos) y damos un pequeño castigo existencial
+        float effort = baseLink.angularVelocity.magnitude;
+        float r_energia = -(effort + 0.01f) * wEnergia;
+        AddReward(r_energia);
     }
 }
