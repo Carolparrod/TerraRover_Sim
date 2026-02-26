@@ -54,7 +54,7 @@ public class HuskyManualController4 : MonoBehaviour
         currentTurn = Mathf.SmoothDamp(currentTurn, targetTurn, ref turnVelocity, inputSmoothTime);
 
         // 2. Cálculo cinemático diferencial estándar
-        float desiredLinear = -currentMove * maxLinearSpeed;
+        float desiredLinear = currentMove * maxLinearSpeed;
         float desiredAngular = currentTurn * maxAngularSpeed;
 
         // Ecuaciones de tracción diferencial: V_rueda = V_lineal +/- (V_angular * AnchoVia / 2)
