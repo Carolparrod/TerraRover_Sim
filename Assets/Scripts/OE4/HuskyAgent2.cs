@@ -5,7 +5,8 @@ using Unity.MLAgents.Sensors;
 public class HuskyAgent2 : Agent
 {
     [Header("Referencias (OE2) adicional")]
-    public TerrainGenerator3 terrainGenerator; // <-- NUEVA REFERENCIA AL GENERADOR
+    //public TerrainGenerator3 terrainGenerator; // <-- NUEVA REFERENCIA AL GENERADOR
+    public TerrainGenerator4 terrainGenerator;
 
     [Header("Referencias (OE3)")]
     public ArticulationBody baseLink; // El ArticulationBody raíz del Husky

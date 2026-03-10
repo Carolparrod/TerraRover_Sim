@@ -1333,7 +1333,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: -0.24946335, y: -0, z: -0, w: -0.96838427}
-  m_LocalPosition: {x: 4.24, y: 2.58, z: -3.19}
+  m_LocalPosition: {x: 4.24, y: 6.03, z: -3.19}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4334,7 +4334,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1205118313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5179,7 +5179,7 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  terrainGenerator: {fileID: 1205118313}
+  terrainGenerator: {fileID: 1848488862}
   baseLink: {fileID: 1366116155}
   target: {fileID: 1076680858}
   maxLinearSpeed: 3
@@ -7252,7 +7252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1848488862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7266,9 +7266,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator4
   terrainFamily: {fileID: 11400000, guid: 331bef96574e43f45b997de5e2faf49f, type: 2}
-  huskyRobot: {fileID: 601536058}
   startPoint: {fileID: 437862233}
-  goalPoint: {fileID: 1801358010}
+  goalPoint: {fileID: 1076680858}
   startClearRadius: 2
   goalClearRadius: 2
 --- !u!154 &1848488863

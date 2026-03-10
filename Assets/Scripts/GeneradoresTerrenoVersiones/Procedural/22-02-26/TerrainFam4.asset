@@ -22,6 +22,6 @@ MonoBehaviour:
   - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   hillScale: 0.8
   hillAmplitude: 2.5
-  holeScale: 3
-  holeDepth: 2.5
-  holeSharpness: 6
+  holeScale: 2
+  holeDepth: 1.5
+  holeSharpness: 3

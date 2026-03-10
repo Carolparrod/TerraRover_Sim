@@ -9,7 +9,6 @@ public class TerrainGenerator4 : MonoBehaviour
 
     // Lista para rastrear los obstáculos y borrarlos al regenerar
     private List<GameObject> spawnedObstacles = new List<GameObject>();
-    public GameObject huskyRobot;
 
     [Header("Puntos de Navegación")]
     [Tooltip("Asigna aquí el GameObject vacío de Inicio")]
@@ -37,60 +36,37 @@ public class TerrainGenerator4 : MonoBehaviour
         Random.InitState(seed);
         ClearObstacles(); // 1. Limpiar lo anterior
 
+        // CORRECCIÓN PERLIN NOISE: Offsets aleatorios para evitar la pérdida de precisión con semillas altas.
+        // Usamos tres offsets distintos para que las colinas, hoyos y rugosidad no se alineen.
+        float offsetMacro = Random.Range(0f, 9999f);
+        float offsetHoles = Random.Range(0f, 9999f);
+        float offsetMicro = Random.Range(0f, 9999f);
+
         int res = terrainData.heightmapResolution;
         float[,] heights = new float[res, res];
 
-        // Elevamos el "suelo cero" a un 30% de la altura total del terreno (Y=10 -> Base=3).
-        // Esto permite que el ruido negativo excave "agujeros" sin salirse del límite inferior.
+        // Elevamos el "suelo cero" a un 30% de la altura total del terreno.
         float baseElevation = terrainData.size.y * 0.3f;
 
-        // 2. Generar Alturas (Rugosidad + Colinas + Pendiente)
+        // 2. Generar Alturas
         for (int i = 0; i < res; i++)
         {
             for (int j = 0; j < res; j++)
             {
-                /*// -- CAPA 1: MACRO-ESTRUCTURA (Colinas y Valles grandes) --
-                float macroX = (float)i / res * terrainFamily.hillScale + seed;
-                float macroY = (float)j / res * terrainFamily.hillScale + seed;
-                // Restamos 0.5f para generar valores positivos (montañas) y negativos (valles)
-                float macroNoise = (Mathf.PerlinNoise(macroX, macroY) - 0.5f) * terrainFamily.hillAmplitude;
-
-                // -- CAPA 2: RUGOSIDAD MEDIA (Baches) --
-                // +100 a la semilla para desfasar este ruido respecto al de las colinas
-                float xCoord = (float)i / res * terrainFamily.noiseScale + (seed + 100);
-                float yCoord = (float)j / res * terrainFamily.noiseScale + (seed + 100);
-                float midNoise = Mathf.PerlinNoise(xCoord, yCoord) * terrainFamily.noiseAmplitude;
-
-                // -- CAPA 3: MICRO-RUGOSIDAD (Detalle fino) --
-                float microNoise = Mathf.PerlinNoise(xCoord * 10, yCoord * 10) * (terrainFamily.noiseAmplitude * 0.2f);
-
-                // -- CAPA 4: PENDIENTE GENERAL --
-                // Ajustada al tamaño real en X del terreno para que los grados sean exactos
-                float slope = (i / (float)res) * terrainData.size.x * Mathf.Tan(terrainFamily.maxSlopeDegrees * Mathf.Deg2Rad);
-
-                // Sumamos todas las capas a la elevación base
-                float totalHeight = baseElevation + macroNoise + midNoise + microNoise + slope;
-
-                // Normalizamos (0 a 1) respecto a la altura máxima del TerrainData
-                // Nota: Unity Terrain lee el array como [y, x] (o [z, x] en coordenadas espaciales)
-                heights[j, i] = Mathf.Clamp01(totalHeight / terrainData.size.y);*/
                 // -- CAPA 1: MACRO-ESTRUCTURA (Colinas suaves) --
-                float macroX = (float)i / res * terrainFamily.hillScale + seed;
-                float macroY = (float)j / res * terrainFamily.hillScale + seed;
+                float macroX = (float)i / res * terrainFamily.hillScale + offsetMacro;
+                float macroY = (float)j / res * terrainFamily.hillScale + offsetMacro;
                 float macroNoise = (Mathf.PerlinNoise(macroX, macroY) - 0.5f) * terrainFamily.hillAmplitude;
 
                 // -- CAPA NUEVA: HOYOS PROMINENTES (Cráteres) --
-                // Usamos una semilla distinta (+200) para que no coincidan con las montañas
-                float holeX = (float)i / res * terrainFamily.holeScale + (seed + 200);
-                float holeY = (float)j / res * terrainFamily.holeScale + (seed + 200);
+                float holeX = (float)i / res * terrainFamily.holeScale + offsetHoles;
+                float holeY = (float)j / res * terrainFamily.holeScale + offsetHoles;
                 float rawHoleNoise = Mathf.PerlinNoise(holeX, holeY);
-                // Aquí está la magia: elevamos el ruido a una potencia. 
-                // Esto "aplana" los valores bajos y afila los altos, creando fosas localizadas.
                 float holes = Mathf.Pow(rawHoleNoise, terrainFamily.holeSharpness) * terrainFamily.holeDepth;
 
-                // -- CAPA 2 y 3: RUGOSIDAD (Tus baches actuales) --
-                float xCoord = (float)i / res * terrainFamily.noiseScale + (seed + 100);
-                float yCoord = (float)j / res * terrainFamily.noiseScale + (seed + 100);
+                // -- CAPA 2 y 3: RUGOSIDAD --
+                float xCoord = (float)i / res * terrainFamily.noiseScale + offsetMicro;
+                float yCoord = (float)j / res * terrainFamily.noiseScale + offsetMicro;
                 float midNoise = Mathf.PerlinNoise(xCoord, yCoord) * terrainFamily.noiseAmplitude;
                 float microNoise = Mathf.PerlinNoise(xCoord * 10, yCoord * 10) * (terrainFamily.noiseAmplitude * 0.2f);
 
@@ -107,18 +83,13 @@ public class TerrainGenerator4 : MonoBehaviour
         // Aplicar las alturas al terreno
         terrainData.SetHeights(0, 0, heights);
 
-        // 3. Generar Obstáculos salvajes respetando inicio/meta
+        // 3. Generar Obstáculos
         SpawnObstacles(seed);
-
-        // 4. Asegurar que el robot no se caiga por el mapa
-        TeleportRobotToSurface();
     }
 
     void SpawnObstacles(int seed)
     {
         Vector3 terrainSize = terrainData.size;
-
-        // Posiciones 2D para calcular distancias fácilmente
         Vector2 startPos2D = startPoint != null ? new Vector2(startPoint.localPosition.x, startPoint.localPosition.z) : Vector2.zero;
         Vector2 goalPos2D = goalPoint != null ? new Vector2(goalPoint.localPosition.x, goalPoint.localPosition.z) : Vector2.zero;
 
@@ -128,21 +99,14 @@ public class TerrainGenerator4 : MonoBehaviour
             {
                 Vector2 currentPos2D = new Vector2(x, z);
 
-                // ZONAS DE EXCLUSIÓN: Evitar rocas en el área de spawn del robot
-                if (startPoint != null && Vector2.Distance(currentPos2D, startPos2D) < startClearRadius)
-                    continue;
+                if (startPoint != null && Vector2.Distance(currentPos2D, startPos2D) < startClearRadius) continue;
+                if (goalPoint != null && Vector2.Distance(currentPos2D, goalPos2D) < goalClearRadius) continue;
 
-                // ZONAS DE EXCLUSIÓN: Evitar rocas tapando la meta
-                if (goalPoint != null && Vector2.Distance(currentPos2D, goalPos2D) < goalClearRadius)
-                    continue;
-
-                // Spawn probabilístico basado en la densidad de la familia
                 if (Random.value < terrainFamily.obstacleDensity)
                 {
                     float y = terrain.SampleHeight(new Vector3(x + transform.position.x, 0, z + transform.position.z));
                     Vector3 spawnPos = new Vector3(x, y, z) + transform.position;
 
-                    // Elegir prefab aleatorio y rotación aleatoria en Y
                     GameObject prefab = terrainFamily.obstaclePrefabs[Random.Range(0, terrainFamily.obstaclePrefabs.Length)];
                     GameObject obs = Instantiate(prefab, spawnPos, Quaternion.Euler(0, Random.Range(0, 360), 0));
 
@@ -162,43 +126,19 @@ public class TerrainGenerator4 : MonoBehaviour
         spawnedObstacles.Clear();
     }
 
-    void Start()
-    {
-        // Genera el terreno automáticamente al dar Play para verificar
-        GenerateTerrain(42);
-    }
+    // ELIMINADOS: void Start() y void TeleportRobotToSurface() para no chocar con HuskyAgent.
 
-    public void TeleportRobotToSurface()
-    {
-        Vector3 pos = huskyRobot.transform.position;
-        // Calculamos la altura real del suelo en las coordenadas X,Z del robot
-        float groundHeight = terrain.SampleHeight(pos) + transform.position.y;
-
-        // Lo colocamos 1 metro por encima para que caiga limpiamente
-        huskyRobot.transform.position = new Vector3(pos.x, groundHeight + 1.0f, pos.z);
-
-        // Reseteamos las físicas del ArticulationBody
-        ArticulationBody rootBody = huskyRobot.GetComponentInChildren<ArticulationBody>();
-        if (rootBody != null)
-        {
-            rootBody.TeleportRoot(huskyRobot.transform.position, huskyRobot.transform.rotation);
-            rootBody.linearVelocity = Vector3.zero;
-            rootBody.angularVelocity = Vector3.zero;
-        }
-    }
-
-    // Dibuja ayudas visuales en la ventana Scene
     private void OnDrawGizmos()
     {
         if (startPoint != null)
         {
-            Gizmos.color = new Color(0, 1, 0, 0.3f); // Verde
+            Gizmos.color = new Color(0, 1, 0, 0.3f);
             Gizmos.DrawSphere(startPoint.position, startClearRadius);
         }
 
         if (goalPoint != null)
         {
-            Gizmos.color = new Color(1, 0, 0, 0.3f); // Rojo
+            Gizmos.color = new Color(1, 0, 0, 0.3f);
             Gizmos.DrawSphere(goalPoint.position, goalClearRadius);
         }
     }
