@@ -1,6 +1,7 @@
-using UnityEngine;
 using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using UnityEngine;
 
 public class HuskyAgent2 : Agent
 {
@@ -39,10 +40,17 @@ public class HuskyAgent2 : Agent
     [Header("Pesos de Recompensa (OE5)")]
     public float wAvance = 1.0f;
     public float wEstabilidad = 0.05f;
-    public float wEnergia = 0.01f;
+    public float wEnergia = 0.001f;
 
     // Variable interna para calcular el avance
     private float previousDistanceToTarget;
+
+    //CAMBIO onActionRecieved + HuskyControllerPrueba4
+    [Header("Configuración de Ruedas (Cinemática Diferencial)")]
+    public ArticulationBody[] leftWheels;
+    public ArticulationBody[] rightWheels;
+    public float trackWidth = 0.55f;
+    public float wheelRadius = 0.165f;
 
     public override void Initialize()
     {
@@ -76,97 +84,25 @@ public class HuskyAgent2 : Agent
         maxDistanceToTarget = Mathf.Sqrt((terrainWidthX * terrainWidthX) + (terrainLengthZ * terrainLengthZ));
 
         Debug.Log($"[HuskyAgent] Distancia máxima calculada para normalización: {maxDistanceToTarget} metros.");
+
+        //CAMBIO onActionRecieved: Configuramos los motores de las ruedas (similar a HuskyManualController4)
+        ConfigurarMotores(leftWheels);
+        ConfigurarMotores(rightWheels);
     }
 
-    /*public override void OnEpisodeBegin()
+    //CAMBIO onActionRecieved: Método para configurar los motores de las ruedas, reutilizado del controlador manual
+    private void ConfigurarMotores(ArticulationBody[] wheels)
     {
-        // ------------------------------------------------------------------
-        // 1. SISTEMA DE RESETS CON SEMILLAS CONTROLADAS
-        // ------------------------------------------------------------------
-        if (useFixedSeed)
+        foreach (var wheel in wheels)
         {
-            Random.InitState(envSeed);
+            var drive = wheel.xDrive;
+            drive.stiffness = 0f;
+            drive.damping = 100f;
+            drive.forceLimit = 1000f;
+            wheel.xDrive = drive;
         }
+    }
 
-        // ------------------------------------------------------------------
-        // 2. RESET FÍSICO DEL ROBOT (ArticulationBody)
-        // ------------------------------------------------------------------
-        baseLink.TeleportRoot(startPosition, startRotation);
-
-        // CORRECCIÓN UNITY 6: Usamos linearVelocity en lugar de velocity
-        baseLink.linearVelocity = Vector3.zero;
-        baseLink.angularVelocity = Vector3.zero;
-
-        // ------------------------------------------------------------------
-        // 3. RESET DEL OBJETIVO (Target)
-        // ------------------------------------------------------------------
-        float randomX = Random.Range(-10f, 10f);
-        float randomZ = Random.Range(10f, 30f);
-        target.position = startPosition + new Vector3(randomX, 0, randomZ);
-
-        // ------------------------------------------------------------------
-        // 4. RESET DE VARIABLES INTERNAS
-        // ------------------------------------------------------------------
-        stuckCounter = 0;
-    }*/
-    //Este daba el problema de que el terreno se generaba después de colocar al robot, lo que podía causar caídas o atascos inmediatos. La nueva versión primero genera el terreno y luego posiciona al robot de forma segura sobre él, asegurando una experiencia de entrenamiento más estable y consistente.
-    /*public override void OnEpisodeBegin()
-    {
-        // ------------------------------------------------------------------
-        // 1. SISTEMA DE RESETS CON SEMILLAS CONTROLADAS Y TERRENO
-        // ------------------------------------------------------------------
-        int currentSeed;
-
-        if (useFixedSeed)
-        {
-            // MODO TEST (OE8): Siempre usamos la misma semilla para que sea 100% reproducible
-            currentSeed = envSeed;
-        }
-        else
-        {
-            // MODO ENTRENAMIENTO (OE6): Usamos una semilla aleatoria en cada episodio
-            // para que el robot aprenda a generalizar sobre N terrenos distintos
-            currentSeed = Random.Range(0, 999999);
-        }
-
-        // Le pedimos al generador que cree el mundo con la semilla decidida
-        if (terrainGenerator != null)
-        {
-            terrainGenerator.GenerateTerrain(currentSeed);
-        }
-
-        // ------------------------------------------------------------------
-        // 2. RESET FÍSICO DEL ROBOT (ArticulationBody)
-        // ------------------------------------------------------------------
-        // Reseteamos el contador de atasco
-        stuckCounter = 0;
-
-        // Si tu TerrainGenerator tiene un punto de inicio definido, lo usamos.
-        // Si no, volvemos a la startPosition guardada en el Initialize()
-        Vector3 resetPos = (terrainGenerator != null && terrainGenerator.startPoint != null)
-                           ? terrainGenerator.startPoint.position
-                           : startPosition;
-
-        baseLink.TeleportRoot(resetPos, startRotation);
-        baseLink.linearVelocity = Vector3.zero;
-        baseLink.angularVelocity = Vector3.zero;
-
-        // ------------------------------------------------------------------
-        // 3. RESET DEL OBJETIVO (Target)
-        // ------------------------------------------------------------------
-        if (terrainGenerator != null && terrainGenerator.goalPoint != null)
-        {
-            // Si el generador ya posicionó el goalPoint, simplemente movemos el target allí
-            target.position = terrainGenerator.goalPoint.position;
-        }
-        else
-        {
-            // Lógica antigua de posicionado aleatorio (por si acaso)
-            float randomX = Random.Range(-10f, 10f);
-            float randomZ = Random.Range(10f, 30f);
-            target.position = startPosition + new Vector3(randomX, 0, randomZ);
-        }
-    }*/
     public override void OnEpisodeBegin()
     {
         int currentSeed = useFixedSeed ? envSeed : Random.Range(0, 999999);
@@ -201,18 +137,7 @@ public class HuskyAgent2 : Agent
         baseLink.linearVelocity = Vector3.zero;
         baseLink.angularVelocity = Vector3.zero;
 
-        // 4. Reposicionamos el objetivo 
-        /*if (terrainGenerator != null && terrainGenerator.goalPoint != null)
-        {
-            target.position = terrainGenerator.goalPoint.position;
-        }
-        else
-        {
-            float randomX = Random.Range(-10f, 10f);
-            float randomZ = Random.Range(10f, 30f);
-            target.position = startPosition + new Vector3(randomX, 0, randomZ);
-        }
-        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
+        
         // 4. Reposicionamos el objetivo (ajustando la z al nuevo terreno)
         Vector3 newTargetPos;
         if (terrainGenerator != null && terrainGenerator.goalPoint != null)
@@ -364,9 +289,54 @@ public class HuskyAgent2 : Agent
         AddReward(r_estabilidad);
 
         // 3. TÉRMINO DE ENERGÍA (Eficiencia y suavidad)
-        // Penalizamos la velocidad angular alta (giros bruscos) y damos un pequeño castigo existencial
-        float effort = baseLink.angularVelocity.magnitude;
-        float r_energia = -(effort + 0.01f) * wEnergia;
-        AddReward(r_energia);
+        // Penalizamos la velocidad angular alta (giros bruscos) y damos un pequeño castigo
+        //float effort = baseLink.angularVelocity.magnitude; ////////////
+        //float r_energia = -(effort + 0.01f) * wEnergia;
+        //AddReward(r_energia);
+
+        //CAMBIO onActionRecieved: Penalizamos el "volantazo" directamente desde las acciones de giro (turnAction) para fomentar giros más suaves
+        AddReward(-0.01f * wEnergia);
+    }
+
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        // 1. Leemos las decisiones de la IA
+        float moveAction = actions.ContinuousActions[0];
+        float turnAction = actions.ContinuousActions[1];
+
+        // 2. Cálculo cinemático diferencial (Tu código manual adaptado)
+        float desiredLinear = moveAction * maxLinearSpeed;
+        float desiredAngular = turnAction * maxAngularSpeed;
+
+        float leftVelocityMPS = desiredLinear + (desiredAngular * (trackWidth / 2f));
+        float rightVelocityMPS = desiredLinear - (desiredAngular * (trackWidth / 2f));
+
+        // Normalización si superamos los límites
+        float maxCalculatedVel = Mathf.Max(Mathf.Abs(leftVelocityMPS), Mathf.Abs(rightVelocityMPS));
+        if (maxCalculatedVel > maxLinearSpeed + (maxAngularSpeed * trackWidth / 2f))
+        {
+            float scale = (maxLinearSpeed + (maxAngularSpeed * trackWidth / 2f)) / maxCalculatedVel;
+            leftVelocityMPS *= scale;
+            rightVelocityMPS *= scale;
+        }
+
+        // 3. Aplicar velocidades a los motores (xDrive)
+        AplicarVelocidadAngular(leftWheels, leftVelocityMPS);
+        AplicarVelocidadAngular(rightWheels, rightVelocityMPS);
+
+        // 4. EL CASTIGO DEL PROFESOR: Penalizar el "volantazo"
+        float steeringPenalty = Mathf.Abs(turnAction) * wEnergia;
+        AddReward(-steeringPenalty);
+    }
+
+    private void AplicarVelocidadAngular(ArticulationBody[] wheels, float linearVelocityMPS)
+    {
+        float targetAngularVelocityDeg = (linearVelocityMPS / wheelRadius) * Mathf.Rad2Deg;
+        foreach (var wheel in wheels)
+        {
+            var drive = wheel.xDrive;
+            drive.targetVelocity = targetAngularVelocityDeg;
+            wheel.xDrive = drive;
+        }
     }
 }

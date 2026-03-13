@@ -5148,11 +5148,11 @@ MonoBehaviour:
     VectorObservationSize: 16
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 0
-      BranchSizes: 01000000
-    VectorActionSize: 01000000
+      m_NumContinuousActions: 2
+      BranchSizes: 
+    VectorActionSize: 02000000
     VectorActionDescriptions: []
-    VectorActionSpaceType: 0
+    VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
@@ -5178,7 +5178,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 5000
   terrainGenerator: {fileID: 1848488862}
   baseLink: {fileID: 1366116155}
   target: {fileID: 1076680858}
@@ -5190,10 +5190,14 @@ MonoBehaviour:
   terrainWidthX: 20
   terrainLengthZ: 20
   minVelocityThreshold: 0.1
-  maxStuckSteps: 1000
+  maxStuckSteps: 150
   wAvance: 1
   wEstabilidad: 0.05
   wEnergia: 0.01
+  leftWheels: []
+  rightWheels: []
+  trackWidth: 0.55
+  wheelRadius: 0.165
 --- !u!114 &1366116160
 MonoBehaviour:
   m_ObjectHideFlags: 0
