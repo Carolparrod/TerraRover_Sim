@@ -1,0 +1,65 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 127652,
+                "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-127652.onnx",
+                "reward": null,
+                "creation_time": 1773429356.4659402,
+                "auxillary_file_paths": [
+                    "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-127652.pt"
+                ]
+            },
+            {
+                "steps": 150623,
+                "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-150623.onnx",
+                "reward": -18.167079590260983,
+                "creation_time": 1773512296.5839288,
+                "auxillary_file_paths": [
+                    "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-150623.pt"
+                ]
+            },
+            {
+                "steps": 499973,
+                "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-499973.onnx",
+                "reward": null,
+                "creation_time": 1773518413.760534,
+                "auxillary_file_paths": [
+                    "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-499973.pt"
+                ]
+            },
+            {
+                "steps": 506821,
+                "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-506821.onnx",
+                "reward": null,
+                "creation_time": 1773518518.6855004,
+                "auxillary_file_paths": [
+                    "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-506821.pt"
+                ]
+            },
+            {
+                "steps": 516541,
+                "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-516541.onnx",
+                "reward": null,
+                "creation_time": 1773658403.3011518,
+                "auxillary_file_paths": [
+                    "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-516541.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 516541,
+            "file_path": "results\\Husky_Guarderia_Definitiva_01\\My Behavior.onnx",
+            "reward": null,
+            "creation_time": 1773658403.3011518,
+            "auxillary_file_paths": [
+                "results\\Husky_Guarderia_Definitiva_01\\My Behavior\\My Behavior-516541.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}

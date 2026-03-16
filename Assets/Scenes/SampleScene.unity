@@ -1167,7 +1167,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 316633775}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d492446de32c02d4d9b105baac42f2bb, type: 3}
   m_Name: 
@@ -1333,7 +1333,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: -0.24946335, y: -0, z: -0, w: -0.96838427}
-  m_LocalPosition: {x: 4.24, y: 6.03, z: -3.19}
+  m_LocalPosition: {x: 1.87, y: 5.06, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4990,10 +4990,9 @@ GameObject:
   - component: {fileID: 1366116154}
   - component: {fileID: 1366116156}
   - component: {fileID: 1366116155}
+  - component: {fileID: 1366116159}
   - component: {fileID: 1366116158}
   - component: {fileID: 1366116157}
-  - component: {fileID: 1366116159}
-  - component: {fileID: 1366116160}
   m_Layer: 0
   m_Name: base_link
   m_TagString: Untagged
@@ -5118,21 +5117,54 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1366116153}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a23aff729329184f8517fe11d95c15c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HuskyAgent
+  m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.DecisionRequester
+  DecisionPeriod: 5
+  DecisionStep: 0
+  TakeActionsBetweenDecisions: 1
+--- !u!114 &1366116158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366116153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34acb1c4f58661447b3d85216f314a36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuskyAgent2
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  baseLink: {fileID: 0}
-  target: {fileID: 0}
-  maxLinearSpeed: 3
-  maxAngularSpeed: 3
-  maxDistanceToTarget: 50
---- !u!114 &1366116158
+  terrainGenerator: {fileID: 1848488862}
+  baseLink: {fileID: 1366116155}
+  target: {fileID: 1076680858}
+  maxLinearSpeed: 1.5
+  maxAngularSpeed: 2
+  successDistance: 2
+  envSeed: 42
+  useFixedSeed: 0
+  terrainWidthX: 20
+  terrainLengthZ: 20
+  minVelocityThreshold: 0.1
+  maxStuckSteps: 150
+  wAvance: 1
+  wEstabilidad: 0.05
+  wEnergia: 0.01
+  leftWheels:
+  - {fileID: 668228452}
+  - {fileID: 1801920553}
+  rightWheels:
+  - {fileID: 1057055061}
+  - {fileID: 1677517033}
+  trackWidth: 0.55
+  wheelRadius: 0.165
+--- !u!114 &1366116159
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5154,65 +5186,15 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: 213f235b8adf093439d9ec4c60157f14, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: My Behavior
   TeamId: 0
   m_UseChildSensors: 1
   m_UseChildActuators: 1
   m_DeterministicInference: 0
   m_ObservableAttributeHandling: 0
---- !u!114 &1366116159
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1366116153}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34acb1c4f58661447b3d85216f314a36, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HuskyAgent2
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 5000
-  terrainGenerator: {fileID: 1848488862}
-  baseLink: {fileID: 1366116155}
-  target: {fileID: 1076680858}
-  maxLinearSpeed: 3
-  maxAngularSpeed: 3
-  successDistance: 2
-  envSeed: 42
-  useFixedSeed: 0
-  terrainWidthX: 20
-  terrainLengthZ: 20
-  minVelocityThreshold: 0.1
-  maxStuckSteps: 150
-  wAvance: 1
-  wEstabilidad: 0.05
-  wEnergia: 0.01
-  leftWheels: []
-  rightWheels: []
-  trackWidth: 0.55
-  wheelRadius: 0.165
---- !u!114 &1366116160
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1366116153}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.DecisionRequester
-  DecisionPeriod: 5
-  DecisionStep: 0
-  TakeActionsBetweenDecisions: 1
 --- !u!1 &1417252033
 GameObject:
   m_ObjectHideFlags: 8
@@ -7269,7 +7251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffe88556d37d66047abe4c7a7069676b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator4
-  terrainFamily: {fileID: 11400000, guid: 331bef96574e43f45b997de5e2faf49f, type: 2}
+  terrainFamily: {fileID: 11400000, guid: 4edd21f285cd4214988fce8890108950, type: 2}
   startPoint: {fileID: 437862233}
   goalPoint: {fileID: 1076680858}
   startClearRadius: 2

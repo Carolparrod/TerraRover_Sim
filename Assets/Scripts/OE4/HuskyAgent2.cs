@@ -14,8 +14,8 @@ public class HuskyAgent2 : Agent
     public Transform target;          // El destino al que debe llegar
 
     [Header("Parámetros de Normalización (OE3)")]
-    public float maxLinearSpeed = 3.0f;  // m/s
-    public float maxAngularSpeed = 3.0f; // rad/s
+    public float maxLinearSpeed = 1.5f;  // m/s
+    public float maxAngularSpeed = 2f; // rad/s
     private float maxDistanceToTarget; // metros máximos esperados
 
     [Header("Condiciones de Episodio (OE4)")]
@@ -97,7 +97,9 @@ public class HuskyAgent2 : Agent
         {
             var drive = wheel.xDrive;
             drive.stiffness = 0f;
-            drive.damping = 100f;
+            //CAMBIO: Para ia
+            //drive.damping = 100f;
+            drive.damping = 10f; // Menos damping para permitir que la IA aprenda a controlar el agarre sin que sea demasiado rígido
             drive.forceLimit = 1000f;
             wheel.xDrive = drive;
         }
@@ -128,7 +130,7 @@ public class HuskyAgent2 : Agent
             {
                 // Buscamos la altura del suelo y le sumamos 1 metro para que el Husky caiga limpio
                 float groundY = t.SampleHeight(resetPos) + t.transform.position.y;
-                resetPos.y = groundY + 1.0f;
+                resetPos.y = groundY + 0.2f;
             }
         }
 
@@ -300,9 +302,17 @@ public class HuskyAgent2 : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        //Descomentar moveAction y turnAction si quieres comprobar que el problema es la ia
+        // Fuerza el movimiento al máximo ignorando a la IA un segundo
+        //float moveAction = 1.0f;
+        //float turnAction = 0.0f;
+        //-----------------------------------------------------------------------------
         // 1. Leemos las decisiones de la IA
         float moveAction = actions.ContinuousActions[0];
         float turnAction = actions.ContinuousActions[1];
+
+        //Para diagnóstico: Imprimimos las acciones recibidas de la IA en la consola (linea comentable para no saturar)
+        Debug.Log($"[MOTOR] Acelerador: {moveAction} | Volante: {turnAction}");
 
         // 2. Cálculo cinemático diferencial (Tu código manual adaptado)
         float desiredLinear = moveAction * maxLinearSpeed;
@@ -327,6 +337,16 @@ public class HuskyAgent2 : Agent
         // 4. EL CASTIGO DEL PROFESOR: Penalizar el "volantazo"
         float steeringPenalty = Mathf.Abs(turnAction) * wEnergia;
         AddReward(-steeringPenalty);
+    }
+    // --------------------------------------------------------
+    // MODO DIAGNÓSTICO: Control manual para testear físicas
+    // --------------------------------------------------------
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        var continuousActionsOut = actionsOut.ContinuousActions;
+        // Leemos las flechas del teclado o WASD y las enviamos como acciones continuas
+        continuousActionsOut[0] = Input.GetAxis("Vertical");   // Acelerar/Frenar
+        continuousActionsOut[1] = Input.GetAxis("Horizontal"); // Volante
     }
 
     private void AplicarVelocidadAngular(ArticulationBody[] wheels, float linearVelocityMPS)
