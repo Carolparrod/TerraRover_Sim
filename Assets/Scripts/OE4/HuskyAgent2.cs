@@ -5,48 +5,43 @@ using UnityEngine;
 
 public class HuskyAgent2 : Agent
 {
-    [Header("Referencias (OE2) adicional")]
-    //public TerrainGenerator3 terrainGenerator; // <-- NUEVA REFERENCIA AL GENERADOR
+    [Header("Referencias (OE2)")]
     public TerrainGenerator4 terrainGenerator;
 
     [Header("Referencias (OE3)")]
-    public ArticulationBody baseLink; // El ArticulationBody raíz del Husky
-    public Transform target;          // El destino al que debe llegar
+    public ArticulationBody baseLink;
+    public Transform target;
 
     [Header("Parámetros de Normalización (OE3)")]
-    public float maxLinearSpeed = 1.5f;  // m/s
-    public float maxAngularSpeed = 2f; // rad/s
-    private float maxDistanceToTarget; // metros máximos esperados
+    public float maxLinearSpeed = 1.5f;
+    public float maxAngularSpeed = 2f;
+    // Nota: Ya no usamos maxDistanceToTarget para evitar colapso en mapas grandes [Problema 2]
 
     [Header("Condiciones de Episodio (OE4)")]
-    public float successDistance = 2.0f; // A qué distancia se considera éxito
-    public int envSeed = 42; // Semilla controlada para reproducibilidad
-    public bool useFixedSeed = false; // Alternar entre entrenamiento (false) y test (true)
+    public float successDistance = 2.0f;
+    public int envSeed = 42;
+    public bool useFixedSeed = false;
 
-    // Variables internas para el reset
-    private Vector3 startPosition;
-    private Quaternion startRotation;
+    [Header("Detección de Atasco (OE4 - Anti-Hacking)")]
+    public float stuckRadiusThreshold = 0.5f; // Radio mínimo a recorrer [Problema 1]
+    public int stuckCheckInterval = 200;      // Pasos físicos (aprox 4s a 50Hz)
+    private Vector3 lastStuckCheckPosition;
+    private int stuckCheckCounter = 0;
 
-    [Header("Parámetros del Entorno")]
-    public float terrainWidthX = 20f;  // Ancho del terreno
-    public float terrainLengthZ = 20f; // Largo del terreno
-
-    [Header("Condiciones de Atasco (OE4/OE5)")]
-    public float minVelocityThreshold = 0.1f; // Velocidad mínima en m/s para considerar que se mueve
-    public int maxStuckSteps = 150;           // Pasos físicos seguidos (aprox 3 segundos a 50Hz)
-
-    private int stuckCounter = 0;             // Contador interno
+    [Header("Límites del Terreno (OE6)")]
+    public float terrainWidthX = 50f;
+    public float terrainLengthZ = 50f;
 
     [Header("Pesos de Recompensa (OE5)")]
     public float wAvance = 1.0f;
     public float wEstabilidad = 0.05f;
-    public float wEnergia = 0.001f;
+    public float wEnergia = 0.0001f; // Reducido para evitar parálisis
 
-    // Variable interna para calcular el avance
+    private Vector3 startPosition;
+    private Quaternion startRotation;
     private float previousDistanceToTarget;
 
-    //CAMBIO onActionRecieved + HuskyControllerPrueba4
-    [Header("Configuración de Ruedas (Cinemática Diferencial)")]
+    [Header("Configuración de Ruedas")]
     public ArticulationBody[] leftWheels;
     public ArticulationBody[] rightWheels;
     public float trackWidth = 0.55f;
@@ -54,52 +49,26 @@ public class HuskyAgent2 : Agent
 
     public override void Initialize()
     {
-        // ------------------------------------------------------------------
-        // CONTROL DE FALLOS (Programación Defensiva)
-        // ------------------------------------------------------------------
-        if (baseLink == null)
+        if (baseLink == null || target == null)
         {
-            Debug.LogError("[HuskyAgent] ERROR: No has asignado el 'baseLink' (ArticulationBody) en el Inspector.");
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false; // Detiene el Play mode
-            #endif
+            Debug.LogError("[HuskyAgent] Faltan referencias en el Inspector.");
             return;
         }
 
-        if (target == null)
-        {
-            Debug.LogError("[HuskyAgent] ERROR: No has asignado el 'target' en el Inspector.");
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-            #endif
-            return;
-        }
-
-        // Guardamos la posición inicial del robot al arrancar la simulación
         startPosition = transform.position;
         startRotation = transform.rotation;
 
-        // CÁLCULO AUTOMÁTICO DE LA DISTANCIA MÁXIMA (Diagonal del terreno)
-        // Se ejecuta una sola vez al inicio (Coste computacional O(1))
-        maxDistanceToTarget = Mathf.Sqrt((terrainWidthX * terrainWidthX) + (terrainLengthZ * terrainLengthZ));
-
-        Debug.Log($"[HuskyAgent] Distancia máxima calculada para normalización: {maxDistanceToTarget} metros.");
-
-        //CAMBIO onActionRecieved: Configuramos los motores de las ruedas (similar a HuskyManualController4)
         ConfigurarMotores(leftWheels);
         ConfigurarMotores(rightWheels);
     }
 
-    //CAMBIO onActionRecieved: Método para configurar los motores de las ruedas, reutilizado del controlador manual
     private void ConfigurarMotores(ArticulationBody[] wheels)
     {
         foreach (var wheel in wheels)
         {
             var drive = wheel.xDrive;
             drive.stiffness = 0f;
-            //CAMBIO: Para ia
-            //drive.damping = 100f;
-            drive.damping = 10f; // Menos damping para permitir que la IA aprenda a controlar el agarre sin que sea demasiado rígido
+            drive.damping = 10f;
             drive.forceLimit = 1000f;
             wheel.xDrive = drive;
         }
@@ -109,253 +78,201 @@ public class HuskyAgent2 : Agent
     {
         int currentSeed = useFixedSeed ? envSeed : Random.Range(0, 999999);
 
-        // 1. Generamos el terreno
-        if (terrainGenerator != null)
-        {
-            terrainGenerator.GenerateTerrain(currentSeed);
-        }
+        // 1. Generar Terreno [cite: 7]
+        if (terrainGenerator != null) terrainGenerator.GenerateTerrain(currentSeed);
 
-        stuckCounter = 0;
+        // 2. Reset de lógica de atasco
+        stuckCheckCounter = 0;
+        lastStuckCheckPosition = transform.position;
 
-        // 2. Calculamos la posición X y Z
+        // 3. Posicionar Rover
         Vector3 resetPos = (terrainGenerator != null && terrainGenerator.startPoint != null)
-                           ? terrainGenerator.startPoint.position
-                           : startPosition;
+                           ? terrainGenerator.startPoint.position : startPosition;
 
-        // CORRECCIÓN CAÍDAS: Leemos la altura exacta de la nueva montaña en esa posición X/Z
         if (terrainGenerator != null)
         {
             Terrain t = terrainGenerator.GetComponent<Terrain>();
-            if (t != null)
-            {
-                // Buscamos la altura del suelo y le sumamos 1 metro para que el Husky caiga limpio
-                float groundY = t.SampleHeight(resetPos) + t.transform.position.y;
-                resetPos.y = groundY + 0.2f;
-            }
+            float groundY = t.SampleHeight(resetPos) + t.transform.position.y;
+            resetPos.y = groundY + 0.2f;
         }
 
-        // 3. Teletransportamos al robot de forma segura
         baseLink.TeleportRoot(resetPos, startRotation);
         baseLink.linearVelocity = Vector3.zero;
         baseLink.angularVelocity = Vector3.zero;
 
-        
-        // 4. Reposicionamos el objetivo (ajustando la z al nuevo terreno)
-        Vector3 newTargetPos;
-        if (terrainGenerator != null && terrainGenerator.goalPoint != null)
-        {
-            newTargetPos = terrainGenerator.goalPoint.position;
-        }
-        else
-        {
-            float randomX = Random.Range(-10f, 10f);
-            float randomZ = Random.Range(10f, 30f);
-            newTargetPos = startPosition + new Vector3(randomX, 0, randomZ);
-        }
+        /*// 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización) [cite: 25]
+        float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        float randomDist = Random.Range(10f, terrainWidthX * 0.4f);
 
-        // Magia topográfica: Leemos la altura exacta de la montaña en esa X y Z
+        Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
+        Vector3 newTargetPos = resetPos + offset;
+
+        // Mantener dentro de límites
+        newTargetPos.x = Mathf.Clamp(newTargetPos.x, -terrainWidthX / 2 + 5, terrainWidthX / 2 - 5);
+        newTargetPos.z = Mathf.Clamp(newTargetPos.z, -terrainLengthZ / 2 + 5, terrainLengthZ / 2 - 5);
+
         if (terrainGenerator != null)
         {
             Terrain t = terrainGenerator.GetComponent<Terrain>();
-            if (t != null)
-            {
-                // SampleHeight devuelve la altura del terreno. Le sumamos la posición base del Terrain
-                float groundY = t.SampleHeight(newTargetPos) + t.transform.position.y;
+            newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
+        }
+        target.position = newTargetPos;
+        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
+        // 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización)
+        float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        float randomDist = Random.Range(10f, terrainWidthX * 0.4f);
 
-                // Le sumamos 0.5 metros extra para que la meta "flote" un poco y no se entierre
-                newTargetPos.y = groundY + 0.5f;
-            }
+        Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
+        Vector3 newTargetPos = resetPos + offset;
+
+        // CORRECCIÓN: Calcular límites reales basados en la posición global del terreno
+        if (terrainGenerator != null)
+        {
+            Terrain t = terrainGenerator.GetComponent<Terrain>();
+            Vector3 terrainOrigin = t.transform.position; // Esquina inferior izquierda del mapa
+            float margin = 5f; // Margen de seguridad (5 metros)
+
+            // Calculamos el Min y Max absolutos en el mundo para este mapa específico
+            float minX = terrainOrigin.x + margin;
+            float maxX = terrainOrigin.x + terrainWidthX - margin;
+            float minZ = terrainOrigin.z + margin;
+            float maxZ = terrainOrigin.z + terrainLengthZ - margin;
+
+            // Clampeamos usando las coordenadas reales
+            newTargetPos.x = Mathf.Clamp(newTargetPos.x, minX, maxX);
+            newTargetPos.z = Mathf.Clamp(newTargetPos.z, minZ, maxZ);
+
+            // Ajustamos la altura final basada en la posición ya clampeada
+            newTargetPos.y = t.SampleHeight(newTargetPos) + terrainOrigin.y + 0.5f;
         }
 
-        // Asignamos la posición final perfecta
         target.position = newTargetPos;
-
-        // 5. Inicializamos la métrica
         previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
+
+        
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // ------------------------------------------------------------------
-        // IMU VIRTUAL Y VECTOR NORMALIZADO
-        // ------------------------------------------------------------------
-
-        // Orientación (Ya acotada entre [-1, 1])
+        // IMU: Orientación local (Invariante a posición global) [cite: 8]
         sensor.AddObservation(transform.up);
         sensor.AddObservation(transform.forward);
 
-        // Velocidad Lineal (Actualizado a linearVelocity y normalizado)
+        // Velocidades normalizadas
         Vector3 localVelocity = transform.InverseTransformDirection(baseLink.linearVelocity);
-        sensor.AddObservation(Mathf.Clamp(localVelocity.x / maxLinearSpeed, -1f, 1f));
-        sensor.AddObservation(Mathf.Clamp(localVelocity.y / maxLinearSpeed, -1f, 1f));
-        sensor.AddObservation(Mathf.Clamp(localVelocity.z / maxLinearSpeed, -1f, 1f));
+        sensor.AddObservation(Vector3.ClampMagnitude(localVelocity / maxLinearSpeed, 1f));
 
-        // Velocidad Angular (Normalizada)
         Vector3 localAngularVelocity = transform.InverseTransformDirection(baseLink.angularVelocity);
-        sensor.AddObservation(Mathf.Clamp(localAngularVelocity.x / maxAngularSpeed, -1f, 1f));
-        sensor.AddObservation(Mathf.Clamp(localAngularVelocity.y / maxAngularSpeed, -1f, 1f));
-        sensor.AddObservation(Mathf.Clamp(localAngularVelocity.z / maxAngularSpeed, -1f, 1f));
+        sensor.AddObservation(Vector3.ClampMagnitude(localAngularVelocity / maxAngularSpeed, 1f));
 
-        // Consciencia del Objetivo (Dirección y distancia normalizada)
+        // SOLUCIÓN: Vector dirección normalizado (Problema 2 - Out of Distribution) [cite: 8, 19]
         Vector3 vectorToTarget = target.position - transform.position;
         Vector3 localDirToTarget = transform.InverseTransformDirection(vectorToTarget.normalized);
         sensor.AddObservation(localDirToTarget);
 
-        float distanceToTarget = vectorToTarget.magnitude;
-        sensor.AddObservation(Mathf.Clamp(distanceToTarget / maxDistanceToTarget, 0f, 1f));
+        // Distancia relativa (opcional, pero normalizada siempre entre 0 y 1 para mapas de cualquier tamaño)
+        sensor.AddObservation(Mathf.Clamp01(vectorToTarget.magnitude / 100f));
     }
 
     private void FixedUpdate()
     {
-
-        // 1. Damos los puntos continuos
         CalculateDenseRewards();
-
-        // 2. Comprobamos si ha muerto o ganado (Sparse rewards)
         CheckTerminalStates();
-    }
-
-    private void CheckTerminalStates()
-    {
-        // ------------------------------------------------------------------
-        // CONDICIÓN DE ÉXITO: Llegar al objetivo
-        // ------------------------------------------------------------------
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
-        if (distanceToTarget <= successDistance)
-        {
-            AddReward(1.0f);
-            Debug.Log($"[ÉXITO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
-            EndEpisode();
-        }
-
-        // ------------------------------------------------------------------
-        // CONDICIÓN DE FALLO 1: Vuelco del rover
-        // ------------------------------------------------------------------
-        if (transform.up.y < 0.2f)
-        {
-            AddReward(-1.0f);
-            Debug.Log($"[VUELCO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
-            EndEpisode();
-        }
-
-        // ------------------------------------------------------------------
-        // CONDICIÓN DE FALLO 2: Caída del mapa (Fallout)
-        // ------------------------------------------------------------------
-        if (transform.position.y < -5f)
-        {
-            AddReward(-1.0f);
-            Debug.Log($"[CAÍDA] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
-            EndEpisode();
-        }
-
-        // ------------------------------------------------------------------
-        // CONDICIÓN DE FALLO 3: Atasco prolongado
-        // ------------------------------------------------------------------
-        // Si la velocidad lineal global es casi cero...
-        if (baseLink.linearVelocity.magnitude < minVelocityThreshold)
-        {
-            stuckCounter++; // Sumamos un paso al contador de atasco
-
-            if (stuckCounter >= maxStuckSteps)
-            {
-                // Penalización severa por quedarse atascado
-                AddReward(-1.0f);
-                Debug.Log($"[ATASCO] Episodio terminado. Puntuación final: {GetCumulativeReward()}");
-                EndEpisode();
-            }
-        }
-        else
-        {
-            // Si consigue moverse a una velocidad decente, reseteamos el contador
-            stuckCounter = 0;
-        }
     }
 
     private void CalculateDenseRewards()
     {
-        // 1. TÉRMINO DE AVANCE (Proximity Reward)
+        // 1. Avance [cite: 10]
         float currentDistance = Vector3.Distance(transform.position, target.position);
         float distanceDifference = previousDistanceToTarget - currentDistance;
-
-        // Premiamos si se ha acercado (positivo) o castigamos si se ha alejado (negativo)
-        float r_avance = distanceDifference * wAvance;
-        AddReward(r_avance);
-
-        // Actualizamos la variable para el siguiente frame
+        AddReward(distanceDifference * wAvance);
         previousDistanceToTarget = currentDistance;
 
-        // 2. TÉRMINO DE ESTABILIDAD
-        // transform.up.y es 1 cuando está plano. Si es 0.8, la penalización es -0.2 * peso
-        float tiltPenalty = (1.0f - transform.up.y);
-        float r_estabilidad = -tiltPenalty * wEstabilidad;
-        AddReward(r_estabilidad);
+        // 2. Penalización por Tiempo (Suave para evitar temeridad)
+        AddReward(-0.0005f);
 
-        // 3. TÉRMINO DE ENERGÍA (Eficiencia y suavidad)
-        // Penalizamos la velocidad angular alta (giros bruscos) y damos un pequeño castigo
-        //float effort = baseLink.angularVelocity.magnitude; ////////////
-        //float r_energia = -(effort + 0.01f) * wEnergia;
-        //AddReward(r_energia);
+        // 3. Estabilidad Cuadrática (Castiga solo inclinaciones fuertes) 
+        float tilt = 1.0f - transform.up.y;
+        if (tilt > 0.1f)
+        {
+            AddReward(-(tilt * tilt) * wEstabilidad);
+        }
+    }
 
-        //CAMBIO onActionRecieved: Penalizamos el "volantazo" directamente desde las acciones de giro (turnAction) para fomentar giros más suaves
-        AddReward(-0.01f * wEnergia);
+    private void CheckTerminalStates()
+    {
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+
+        // Éxito [cite: 13]
+        if (distanceToTarget <= successDistance)
+        {
+            AddReward(2.0f);
+            Debug.Log($"[ÉXITO] Meta alcanzada. Recompensa otorgada.");
+            EndEpisode();
+            return;
+        }
+
+        // Vuelco o Caída [cite: 10]
+        if (transform.up.y < 0.2f || transform.position.y < -5f)
+        {
+            AddReward(-1.0f);
+            Debug.Log($"[FALLO - CAÍDA] El robot cayó al vacío. Altura Y = {transform.position.y}");
+            EndEpisode();
+            return;
+        }
+
+        // SOLUCIÓN: Atasco por desplazamiento neto (Problema 1) [cite: 9, 10]
+        stuckCheckCounter++;
+        if (stuckCheckCounter >= stuckCheckInterval)
+        {
+            float displacement = Vector3.Distance(transform.position, lastStuckCheckPosition);
+            if (displacement < stuckRadiusThreshold)
+            {
+                AddReward(-1.0f);
+                Debug.Log($"[FALLO - ATASCO] Solo avanzó {displacement}m en {stuckCheckInterval} pasos.");
+                EndEpisode();
+                return;
+            }
+            else
+            {
+                lastStuckCheckPosition = transform.position;
+                stuckCheckCounter = 0;
+            }
+        }
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        //Descomentar moveAction y turnAction si quieres comprobar que el problema es la ia
-        // Fuerza el movimiento al máximo ignorando a la IA un segundo
-        //float moveAction = 1.0f;
-        //float turnAction = 0.0f;
-        //-----------------------------------------------------------------------------
-        // 1. Leemos las decisiones de la IA
         float moveAction = actions.ContinuousActions[0];
         float turnAction = actions.ContinuousActions[1];
 
-        //Para diagnóstico: Imprimimos las acciones recibidas de la IA en la consola (linea comentable para no saturar)
-        Debug.Log($"[MOTOR] Acelerador: {moveAction} | Volante: {turnAction}");
-
-        // 2. Cálculo cinemático diferencial (Tu código manual adaptado)
         float desiredLinear = moveAction * maxLinearSpeed;
         float desiredAngular = turnAction * maxAngularSpeed;
 
-        float leftVelocityMPS = desiredLinear + (desiredAngular * (trackWidth / 2f));
-        float rightVelocityMPS = desiredLinear - (desiredAngular * (trackWidth / 2f));
+        float leftVel = desiredLinear + (desiredAngular * (trackWidth / 2f));
+        float rightVel = desiredLinear - (desiredAngular * (trackWidth / 2f));
 
-        // Normalización si superamos los límites
-        float maxCalculatedVel = Mathf.Max(Mathf.Abs(leftVelocityMPS), Mathf.Abs(rightVelocityMPS));
-        if (maxCalculatedVel > maxLinearSpeed + (maxAngularSpeed * trackWidth / 2f))
-        {
-            float scale = (maxLinearSpeed + (maxAngularSpeed * trackWidth / 2f)) / maxCalculatedVel;
-            leftVelocityMPS *= scale;
-            rightVelocityMPS *= scale;
-        }
+        AplicarVelocidadAngular(leftWheels, leftVel);
+        AplicarVelocidadAngular(rightWheels, rightVel);
 
-        // 3. Aplicar velocidades a los motores (xDrive)
-        AplicarVelocidadAngular(leftWheels, leftVelocityMPS);
-        AplicarVelocidadAngular(rightWheels, rightVelocityMPS);
-
-        // 4. EL CASTIGO DEL PROFESOR: Penalizar el "volantazo"
-        float steeringPenalty = Mathf.Abs(turnAction) * wEnergia;
-        AddReward(-steeringPenalty);
+        // Penalización por volantazo [cite: 10, 15]
+        AddReward(-Mathf.Abs(turnAction) * wEnergia);
     }
-    // --------------------------------------------------------
-    // MODO DIAGNÓSTICO: Control manual para testear físicas
-    // --------------------------------------------------------
+
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
-        // Leemos las flechas del teclado o WASD y las enviamos como acciones continuas
-        continuousActionsOut[0] = Input.GetAxis("Vertical");   // Acelerar/Frenar
-        continuousActionsOut[1] = Input.GetAxis("Horizontal"); // Volante
+        continuousActionsOut[0] = Input.GetAxis("Vertical");
+        continuousActionsOut[1] = Input.GetAxis("Horizontal");
     }
 
-    private void AplicarVelocidadAngular(ArticulationBody[] wheels, float linearVelocityMPS)
+    private void AplicarVelocidadAngular(ArticulationBody[] wheels, float linearVel)
     {
-        float targetAngularVelocityDeg = (linearVelocityMPS / wheelRadius) * Mathf.Rad2Deg;
+        float targetAngularVel = (linearVel / wheelRadius) * Mathf.Rad2Deg;
         foreach (var wheel in wheels)
         {
             var drive = wheel.xDrive;
-            drive.targetVelocity = targetAngularVelocityDeg;
+            drive.targetVelocity = targetAngularVel;
             wheel.xDrive = drive;
         }
     }
