@@ -85,65 +85,49 @@ public class HuskyAgent2 : Agent
         stuckCheckCounter = 0;
         lastStuckCheckPosition = transform.position;
 
-        // 3. Posicionar Rover
-        Vector3 resetPos = (terrainGenerator != null && terrainGenerator.startPoint != null)
-                           ? terrainGenerator.startPoint.position : startPosition;
+        
+        // 3. Posicionar Rover (Spawn Central para evitar sesgo direccional)
+        Vector3 resetPos = startPosition;
 
         if (terrainGenerator != null)
         {
             Terrain t = terrainGenerator.GetComponent<Terrain>();
-            float groundY = t.SampleHeight(resetPos) + t.transform.position.y;
+            Vector3 terrainOrigin = t.transform.position;
+
+            // Calculamos el centro exacto de ESTE mapa específico
+            float centerX = terrainOrigin.x + (terrainWidthX / 2f);
+            float centerZ = terrainOrigin.z + (terrainLengthZ / 2f);
+
+            resetPos = new Vector3(centerX, 0, centerZ);
+
+            // Ajustamos la altura para que no atraviese el suelo
+            float groundY = t.SampleHeight(resetPos) + terrainOrigin.y;
             resetPos.y = groundY + 0.2f;
         }
 
-        baseLink.TeleportRoot(resetPos, startRotation);
+        // Teletransportamos al robot al centro, dándole también una rotación inicial aleatoria
+        // para maximizar la generalización en todas las orientaciones posibles.
+        float randomYaw = Random.Range(0f, 360f);
+        Quaternion randomSpawnRotation = Quaternion.Euler(0, randomYaw, 0);
+
+        baseLink.TeleportRoot(resetPos, randomSpawnRotation);
         baseLink.linearVelocity = Vector3.zero;
         baseLink.angularVelocity = Vector3.zero;
 
-        /*// 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización) [cite: 25]
-        float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float randomDist = Random.Range(10f, terrainWidthX * 0.4f);
-
-        Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
-        Vector3 newTargetPos = resetPos + offset;
-
-        // Mantener dentro de límites
-        newTargetPos.x = Mathf.Clamp(newTargetPos.x, -terrainWidthX / 2 + 5, terrainWidthX / 2 - 5);
-        newTargetPos.z = Mathf.Clamp(newTargetPos.z, -terrainLengthZ / 2 + 5, terrainLengthZ / 2 - 5);
-
-        if (terrainGenerator != null)
-        {
-            Terrain t = terrainGenerator.GetComponent<Terrain>();
-            newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
-        }
-        target.position = newTargetPos;
-        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
+        
         // 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización)
         float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float randomDist = Random.Range(10f, terrainWidthX * 0.4f);
+        float randomDist = Random.Range(5f, terrainWidthX * 0.4f);
 
         Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
         Vector3 newTargetPos = resetPos + offset;
 
-        // CORRECCIÓN: Calcular límites reales basados en la posición global del terreno
+        
         if (terrainGenerator != null)
         {
+            
             Terrain t = terrainGenerator.GetComponent<Terrain>();
-            Vector3 terrainOrigin = t.transform.position; // Esquina inferior izquierda del mapa
-            float margin = 5f; // Margen de seguridad (5 metros)
-
-            // Calculamos el Min y Max absolutos en el mundo para este mapa específico
-            float minX = terrainOrigin.x + margin;
-            float maxX = terrainOrigin.x + terrainWidthX - margin;
-            float minZ = terrainOrigin.z + margin;
-            float maxZ = terrainOrigin.z + terrainLengthZ - margin;
-
-            // Clampeamos usando las coordenadas reales
-            newTargetPos.x = Mathf.Clamp(newTargetPos.x, minX, maxX);
-            newTargetPos.z = Mathf.Clamp(newTargetPos.z, minZ, maxZ);
-
-            // Ajustamos la altura final basada en la posición ya clampeada
-            newTargetPos.y = t.SampleHeight(newTargetPos) + terrainOrigin.y + 0.5f;
+            newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
         }
 
         target.position = newTargetPos;
@@ -165,7 +149,7 @@ public class HuskyAgent2 : Agent
         Vector3 localAngularVelocity = transform.InverseTransformDirection(baseLink.angularVelocity);
         sensor.AddObservation(Vector3.ClampMagnitude(localAngularVelocity / maxAngularSpeed, 1f));
 
-        // SOLUCIÓN: Vector dirección normalizado (Problema 2 - Out of Distribution) [cite: 8, 19]
+        //Vector dirección normalizado (Problema 2 - Out of Distribution) 
         Vector3 vectorToTarget = target.position - transform.position;
         Vector3 localDirToTarget = transform.InverseTransformDirection(vectorToTarget.normalized);
         sensor.AddObservation(localDirToTarget);
@@ -182,7 +166,7 @@ public class HuskyAgent2 : Agent
 
     private void CalculateDenseRewards()
     {
-        // 1. Avance [cite: 10]
+        // 1. Avance
         float currentDistance = Vector3.Distance(transform.position, target.position);
         float distanceDifference = previousDistanceToTarget - currentDistance;
         AddReward(distanceDifference * wAvance);
@@ -203,7 +187,7 @@ public class HuskyAgent2 : Agent
     {
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // Éxito [cite: 13]
+        // Éxito
         if (distanceToTarget <= successDistance)
         {
             AddReward(2.0f);
@@ -212,7 +196,7 @@ public class HuskyAgent2 : Agent
             return;
         }
 
-        // Vuelco o Caída [cite: 10]
+        // Vuelco o Caída 
         if (transform.up.y < 0.2f || transform.position.y < -5f)
         {
             AddReward(-1.0f);
@@ -221,7 +205,7 @@ public class HuskyAgent2 : Agent
             return;
         }
 
-        // SOLUCIÓN: Atasco por desplazamiento neto (Problema 1) [cite: 9, 10]
+        // SOLUCIÓN: Atasco por desplazamiento neto (Problema 1) 
         stuckCheckCounter++;
         if (stuckCheckCounter >= stuckCheckInterval)
         {
@@ -255,8 +239,16 @@ public class HuskyAgent2 : Agent
         AplicarVelocidadAngular(leftWheels, leftVel);
         AplicarVelocidadAngular(rightWheels, rightVel);
 
-        // Penalización por volantazo [cite: 10, 15]
+        // Penalización por volantazo 
         AddReward(-Mathf.Abs(turnAction) * wEnergia);
+
+        // NUEVO, ACTIVAR A PARTIR DE INFANTIL: Penalización suave por ir marcha atrás
+        // moveAction va de -1 a 1. Si es menor que 0, es marcha atrás.
+        if (moveAction < 0)
+        {
+            // Como moveAction ya es negativo, al multiplicarlo por un peso positivo, restará recompensa.
+            AddReward(moveAction * 0.01f);
+        }
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)

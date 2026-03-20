@@ -18,13 +18,14 @@ public class TerrainFam4 : ScriptableObject
     /// /
     /// </summary>
     [Header("Macro-Estructura (Colinas y Valles)")]
-    // Subimos el rango. Un valor de 1 a 3 creará colinas gigantes en tu mapa de 20x20
-    [Range(0.1f, 5f)] public float hillScale = 1.5f;
-    public float hillAmplitude = 4.0f;
+    [Range(0.01f, 5f)] public float hillScale = 0.05f;
+    public float hillAmplitude = 2.0f;
 
     [Header("Hoyos y Cráteres")]
     // Subimos el rango. Un valor de 3 a 5 pondrá varios hoyos repartidos por el mapa
     [Range(1f, 15f)] public float holeScale = 4.0f;
     public float holeDepth = 6.0f;
     [Range(1f, 10f)] public float holeSharpness = 4.0f;
+
+    
 }
