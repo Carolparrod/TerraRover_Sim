@@ -1332,13 +1332,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.24946335, y: -0, z: -0, w: -0.96838427}
-  m_LocalPosition: {x: 1.87, y: 5.06, z: -1.64}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 24.6, y: 43.35, z: 22.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 601536061}
-  m_LocalEulerAnglesHint: {x: -331.108, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5149,13 +5149,17 @@ MonoBehaviour:
   successDistance: 2
   envSeed: 42
   useFixedSeed: 0
-  stuckRadiusThreshold: 0.5
-  stuckCheckInterval: 200
+  stuckRadiusThreshold: 0.1
+  minSpinAngle: 2
+  stuckCheckInterval: 150
+  maxStuckPermitido: 2
+  maxSpinPermitido: 10
   terrainWidthX: 50
   terrainLengthZ: 50
   wAvance: 1
-  wEstabilidad: 0.05
-  wEnergia: 0.0001
+  wEstabilidad: 0.01
+  wEnergia: 0.001
+  wAlineacion: 0.01
   leftWheels:
   - {fileID: 668228452}
   - {fileID: 1801920553}
@@ -7251,7 +7255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffe88556d37d66047abe4c7a7069676b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator4
-  terrainFamily: {fileID: 11400000, guid: db84dfba67c0c6741a90a97665a2acf4, type: 2}
+  terrainFamily: {fileID: 11400000, guid: 4edd21f285cd4214988fce8890108950, type: 2}
   startPoint: {fileID: 437862233}
   goalPoint: {fileID: 1076680858}
   startClearRadius: 2

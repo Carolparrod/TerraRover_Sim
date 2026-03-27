@@ -23,10 +23,18 @@ public class HuskyAgent2 : Agent
     public bool useFixedSeed = false;
 
     [Header("Detección de Atasco (OE4 - Anti-Hacking)")]
-    public float stuckRadiusThreshold = 0.5f; // Radio mínimo a recorrer [Problema 1]
-    public int stuckCheckInterval = 200;      // Pasos físicos (aprox 4s a 50Hz)
-    private Vector3 lastStuckCheckPosition;
-    private int stuckCheckCounter = 0;
+    public float stuckRadiusThreshold = 0.1f; // 10 cm mínimos
+    public float minSpinAngle = 2.0f;         // 2 grados mínimos para considerarlo giro
+    public int stuckCheckInterval = 50;       // Comprobamos cada 50 pasos (1 segundo)
+    public int maxStuckPermitido = 3;         // Falla si está 3 segundos atascado
+    public int maxSpinPermitido = 10;          // Falla si está 4 segundos girando sin acercarse
+
+    private int checkTimer = 0;
+    private int stuckCounter = 0;
+    private int spinCounter = 0;
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
+    private float lastDistanceToCheck;
 
     [Header("Límites del Terreno (OE6)")]
     public float terrainWidthX = 50f;
@@ -36,6 +44,7 @@ public class HuskyAgent2 : Agent
     public float wAvance = 1.0f;
     public float wEstabilidad = 0.05f;
     public float wEnergia = 0.0001f; // Reducido para evitar parálisis
+    public float wAlineacion = 0.01f; // NUEVO (Fase 2): Castigo por desalineación
 
     private Vector3 startPosition;
     private Quaternion startRotation;
@@ -81,11 +90,6 @@ public class HuskyAgent2 : Agent
         // 1. Generar Terreno [cite: 7]
         if (terrainGenerator != null) terrainGenerator.GenerateTerrain(currentSeed);
 
-        // 2. Reset de lógica de atasco
-        stuckCheckCounter = 0;
-        lastStuckCheckPosition = transform.position;
-
-        
         // 3. Posicionar Rover (Spawn Central para evitar sesgo direccional)
         Vector3 resetPos = startPosition;
 
@@ -133,7 +137,15 @@ public class HuskyAgent2 : Agent
         target.position = newTargetPos;
         previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        
+        // NUEVO: Reset de la memoria anti-atascos de la lógica del profesor
+        checkTimer = 0;
+        stuckCounter = 0;
+        spinCounter = 0;
+        lastPosition = transform.localPosition;
+        lastRotation = transform.localRotation;
+        lastDistanceToCheck = previousDistanceToTarget;
+
+
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -181,6 +193,38 @@ public class HuskyAgent2 : Agent
         {
             AddReward(-(tilt * tilt) * wEstabilidad);
         }
+
+        // 4. NUEVO (Fase 2): Penalización estricta por Desalineación (Gradiente continuo)
+        float currentSpeed = baseLink.linearVelocity.magnitude;
+
+        if (currentSpeed > 0.1f)
+        {
+            Vector3 moveDirection = baseLink.linearVelocity.normalized;
+            float alignment = Vector3.Dot(transform.forward, moveDirection);
+
+            // Si no está alineado casi perfectamente hacia adelante (margen de ~36 grados)
+            if (alignment < 0.8f)
+            {
+                // La fórmula (alignment - 1.0f) garantiza que la penalización sea progresiva.
+                // Cuanto más se desvíe del 1.0 perfecto, mayor será el castigo (negativo).
+                AddReward((alignment - 1.0f) * currentSpeed * wAlineacion);
+            }
+        }
+
+        // 5. NUEVO: La Brújula del Dolor (Romper la simetría estática/tembleque)
+        // Calculamos hacia dónde mira el robot en relación a la meta (independiente de si se mueve o no)
+        Vector3 dirToTarget = (target.position - transform.position).normalized;
+        float lookAlignment = Vector3.Dot(transform.forward, dirToTarget);
+
+        // Si no está mirando hacia la meta (lookAlignment es menor a 0.5, aprox 60 grados de desviación)
+        // Esto le castiga por el simple hecho de darle la espalda al objetivo, forzándolo a girar el morro.
+        if (lookAlignment < 0.5f)
+        {
+            // El multiplicador 0.002f es bajito para que no se asuste, 
+            // pero lo suficiente para que el "tembleque" infinito le salga caro.
+            AddReward((lookAlignment - 1.0f) * 0.002f);
+        }
+
     }
 
     private void CheckTerminalStates()
@@ -205,23 +249,61 @@ public class HuskyAgent2 : Agent
             return;
         }
 
-        // SOLUCIÓN: Atasco por desplazamiento neto (Problema 1) 
-        stuckCheckCounter++;
-        if (stuckCheckCounter >= stuckCheckInterval)
+        // --- NUEVA LÓGICA ANTI-ATASCO (Profesor) ---
+        checkTimer++;
+        if (checkTimer >= stuckCheckInterval)
         {
-            float displacement = Vector3.Distance(transform.position, lastStuckCheckPosition);
-            if (displacement < stuckRadiusThreshold)
+            float distanceMoved = Vector3.Distance(transform.localPosition, lastPosition);
+            float angleTurned = Quaternion.Angle(transform.localRotation, lastRotation);
+
+            if (distanceMoved >= stuckRadiusThreshold)
             {
-                AddReward(-1.0f);
-                Debug.Log($"[FALLO - ATASCO] Solo avanzó {displacement}m en {stuckCheckInterval} pasos.");
-                EndEpisode();
-                return;
+                // CASO A: Avanza bien
+                stuckCounter = 0;
+                spinCounter = 0;
             }
             else
             {
-                lastStuckCheckPosition = transform.position;
-                stuckCheckCounter = 0;
+                // CASO B: No avanza linealmente. ¿Gira?
+                if (angleTurned >= minSpinAngle)
+                {
+                    // ¿Mejora su distancia a la meta? (Le damos 5cm de tolerancia)
+                    if (distanceToTarget <= lastDistanceToCheck + 0.05f)
+                    {
+                        stuckCounter = 0;
+                        spinCounter = 0; // Giro útil, todo bien
+                    }
+                    else
+                    {
+                        spinCounter++; // Giro inútil (peonza)
+                        if (spinCounter >= maxSpinPermitido)
+                        {
+                            AddReward(-1.0f);
+                            Debug.Log("[FALLO] Bucle de rotación sin progreso.");
+                            EndEpisode();
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    // CASO C: Ni avanza ni gira
+                    stuckCounter++;
+                    if (stuckCounter >= maxStuckPermitido)
+                    {
+                        AddReward(-1.0f);
+                        Debug.Log("[FALLO] Atasco físico detectado.");
+                        EndEpisode();
+                        return;
+                    }
+                }
             }
+
+            // Actualizamos la memoria para el siguiente intervalo
+            lastPosition = transform.localPosition;
+            lastRotation = transform.localRotation;
+            lastDistanceToCheck = distanceToTarget;
+            checkTimer = 0;
         }
     }
 
@@ -242,13 +324,7 @@ public class HuskyAgent2 : Agent
         // Penalización por volantazo 
         AddReward(-Mathf.Abs(turnAction) * wEnergia);
 
-        // NUEVO, ACTIVAR A PARTIR DE INFANTIL: Penalización suave por ir marcha atrás
-        // moveAction va de -1 a 1. Si es menor que 0, es marcha atrás.
-        if (moveAction < 0)
-        {
-            // Como moveAction ya es negativo, al multiplicarlo por un peso positivo, restará recompensa.
-            AddReward(moveAction * 0.01f);
-        }
+        
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)

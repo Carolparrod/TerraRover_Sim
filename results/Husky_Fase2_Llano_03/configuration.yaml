@@ -35,7 +35,7 @@ behaviors:
           memory: null
           goal_conditioning_type: hyper
           deterministic: false
-    init_path: null
+    init_path: results\Husky_Guarderia_Definitiva_03\My Behavior\checkpoint.pt
     keep_checkpoints: 5
     even_checkpoints: false
     max_steps: 1500000
@@ -66,10 +66,10 @@ engine_settings:
   no_graphics_monitor: false
 environment_parameters: null
 checkpoint_settings:
-  run_id: Husky_Guarderia_Definitiva_03
-  initialize_from: null
+  run_id: Husky_Fase2_Llano_03
+  initialize_from: Husky_Guarderia_Definitiva_03
   load_model: false
-  resume: true
+  resume: false
   force: false
   train_model: false
   inference: false
