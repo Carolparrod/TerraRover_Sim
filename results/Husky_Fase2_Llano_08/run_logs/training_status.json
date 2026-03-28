@@ -1,0 +1,56 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 60691,
+                "file_path": "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-60691.onnx",
+                "reward": -6.979711879182745,
+                "creation_time": 1774634606.8324673,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-60691.pt"
+                ]
+            },
+            {
+                "steps": 301716,
+                "file_path": "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-301716.onnx",
+                "reward": -12.893605616357592,
+                "creation_time": 1774636134.7873142,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-301716.pt"
+                ]
+            },
+            {
+                "steps": 499940,
+                "file_path": "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-499940.onnx",
+                "reward": 9.742644548416138,
+                "creation_time": 1774637066.0563762,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-499940.pt"
+                ]
+            },
+            {
+                "steps": 538644,
+                "file_path": "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-538644.onnx",
+                "reward": null,
+                "creation_time": 1774637245.2374883,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-538644.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 538644,
+            "file_path": "results\\Husky_Fase2_Llano_08\\My Behavior.onnx",
+            "reward": null,
+            "creation_time": 1774637245.2374883,
+            "auxillary_file_paths": [
+                "results\\Husky_Fase2_Llano_08\\My Behavior\\My Behavior-538644.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}

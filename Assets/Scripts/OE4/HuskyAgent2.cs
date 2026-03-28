@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -5,6 +6,11 @@ using UnityEngine;
 
 public class HuskyAgent2 : Agent
 {
+    [Header("Visual Feedback")]
+    public Terrain groundTerrain; 
+    private Color originalGroundColor;
+    private Coroutine flashGroundCoroutine;
+    
     [Header("Referencias (OE2)")]
     public TerrainGenerator4 terrainGenerator;
 
@@ -34,7 +40,6 @@ public class HuskyAgent2 : Agent
     private int spinCounter = 0;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
-    private float lastDistanceToCheck;
 
     [Header("Límites del Terreno (OE6)")]
     public float terrainWidthX = 50f;
@@ -56,6 +61,9 @@ public class HuskyAgent2 : Agent
     public float trackWidth = 0.55f;
     public float wheelRadius = 0.165f;
 
+
+   
+
     public override void Initialize()
     {
         if (baseLink == null || target == null)
@@ -69,6 +77,14 @@ public class HuskyAgent2 : Agent
 
         ConfigurarMotores(leftWheels);
         ConfigurarMotores(rightWheels);
+
+        if (groundTerrain != null && groundTerrain.materialTemplate != null)
+        {
+            // Creamos un clon del material SOLO para este rover. 
+            // Así los destellos no afectan a los otros mapas paralelos.
+            groundTerrain.materialTemplate = new Material(groundTerrain.materialTemplate);
+            originalGroundColor = groundTerrain.materialTemplate.color;
+        }
     }
 
     private void ConfigurarMotores(ArticulationBody[] wheels)
@@ -85,6 +101,8 @@ public class HuskyAgent2 : Agent
 
     public override void OnEpisodeBegin()
     {
+
+
         int currentSeed = useFixedSeed ? envSeed : Random.Range(0, 999999);
 
         // 1. Generar Terreno [cite: 7]
@@ -143,9 +161,42 @@ public class HuskyAgent2 : Agent
         spinCounter = 0;
         lastPosition = transform.localPosition;
         lastRotation = transform.localRotation;
-        lastDistanceToCheck = previousDistanceToTarget;
+        
 
 
+    }
+    
+    private IEnumerator FlashGround(Color flashColor, float duration)
+    {
+        if (groundTerrain == null || groundTerrain.materialTemplate == null) yield break;
+
+        // Ponemos el color de golpe (rojo o verde)
+        groundTerrain.materialTemplate.color = flashColor;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            // Lo vamos difuminando de vuelta a su color original
+            groundTerrain.materialTemplate.color = Color.Lerp(flashColor, originalGroundColor, elapsed / duration);
+            yield return null;
+        }
+
+        // Nos aseguramos de que termine en su color exacto
+        groundTerrain.materialTemplate.color = originalGroundColor;
+    }
+
+    // Función para disparar el color fácilmente
+    private void DispararFlash(Color colorFlash)
+    {
+        if (groundTerrain != null && groundTerrain.materialTemplate != null)
+        {
+            if (flashGroundCoroutine != null)
+            {
+                StopCoroutine(flashGroundCoroutine);
+            }
+            flashGroundCoroutine = StartCoroutine(FlashGround(colorFlash, 0.5f));
+        }
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -235,74 +286,79 @@ public class HuskyAgent2 : Agent
         if (distanceToTarget <= successDistance)
         {
             AddReward(2.0f);
-            Debug.Log($"[ÉXITO] Meta alcanzada. Recompensa otorgada.");
+            //Debug.Log($"[ÉXITO] Meta alcanzada. Recompensa otorgada.");
+            DispararFlash(Color.green); // <-- LUZ VERDE
             EndEpisode();
             return;
         }
 
-        // Vuelco o Caída 
+        /*// Vuelco o Caída 
         if (transform.up.y < 0.2f || transform.position.y < -5f)
         {
             AddReward(-1.0f);
             Debug.Log($"[FALLO - CAÍDA] El robot cayó al vacío. Altura Y = {transform.position.y}");
             EndEpisode();
             return;
+        }*/
+        float relativeY = transform.position.y - terrainGenerator.transform.position.y;
+        if (transform.up.y < 0.2f || relativeY < -5f)
+        {
+            AddReward(-1.0f);
+            //Debug.Log($"[FALLO - CAÍDA] El robot cayó al vacío.");
+            DispararFlash(Color.blue); 
+            EndEpisode();
+            return;
         }
 
-        // --- NUEVA LÓGICA ANTI-ATASCO (Profesor) ---
+    
+        // --- LÓGICA ANTI-ATASCO (Filtro de Desplazamiento Neto) ---
         checkTimer++;
         if (checkTimer >= stuckCheckInterval)
         {
-            float distanceMoved = Vector3.Distance(transform.localPosition, lastPosition);
-            float angleTurned = Quaternion.Angle(transform.localRotation, lastRotation);
+            float netDistanceMoved = Vector3.Distance(transform.localPosition, lastPosition);
+            float netAngleTurned = Quaternion.Angle(transform.localRotation, lastRotation);
 
-            if (distanceMoved >= stuckRadiusThreshold)
+            if (netDistanceMoved >= 0.5f)
             {
-                // CASO A: Avanza bien
+                // Se ha movido medio metro de verdad. Le perdonamos todo.
                 stuckCounter = 0;
                 spinCounter = 0;
             }
             else
             {
-                // CASO B: No avanza linealmente. ¿Gira?
-                if (angleTurned >= minSpinAngle)
+                if (netAngleTurned >= 45.0f)
                 {
-                    // ¿Mejora su distancia a la meta? (Le damos 5cm de tolerancia)
-                    if (distanceToTarget <= lastDistanceToCheck + 0.05f)
+                    // No avanza, pero ha girado de verdad (Mínimo 45 grados).
+                    spinCounter++;
+                    stuckCounter = 0;
+
+                    if (spinCounter >= maxSpinPermitido)
                     {
-                        stuckCounter = 0;
-                        spinCounter = 0; // Giro útil, todo bien
-                    }
-                    else
-                    {
-                        spinCounter++; // Giro inútil (peonza)
-                        if (spinCounter >= maxSpinPermitido)
-                        {
-                            AddReward(-1.0f);
-                            Debug.Log("[FALLO] Bucle de rotación sin progreso.");
-                            EndEpisode();
-                            return;
-                        }
+                        AddReward(-1.0f);
+                        DispararFlash(Color.yellow);
+                        EndEpisode();
+                        return;
                     }
                 }
                 else
                 {
-                    // CASO C: Ni avanza ni gira
+                    // Tembleque o Congelado: Ni avanza 0.5m, ni gira 45º.
                     stuckCounter++;
+                    spinCounter = 0;
+
                     if (stuckCounter >= maxStuckPermitido)
                     {
                         AddReward(-1.0f);
-                        Debug.Log("[FALLO] Atasco físico detectado.");
+                        DispararFlash(Color.red);
                         EndEpisode();
                         return;
                     }
                 }
             }
 
-            // Actualizamos la memoria para el siguiente intervalo
+            // Guardamos la foto para compararla dentro de otros 3 segundos (150 steps)
             lastPosition = transform.localPosition;
             lastRotation = transform.localRotation;
-            lastDistanceToCheck = distanceToTarget;
             checkTimer = 0;
         }
     }

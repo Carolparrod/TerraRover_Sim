@@ -1,0 +1,47 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 499954,
+                "file_path": "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-499954.onnx",
+                "reward": -0.4429135928551356,
+                "creation_time": 1774641800.192345,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-499954.pt"
+                ]
+            },
+            {
+                "steps": 999884,
+                "file_path": "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-999884.onnx",
+                "reward": -3.051302206516266,
+                "creation_time": 1774644112.1250544,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-999884.pt"
+                ]
+            },
+            {
+                "steps": 1268830,
+                "file_path": "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-1268830.onnx",
+                "reward": 9.718478004137674,
+                "creation_time": 1774645384.2548146,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-1268830.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1268830,
+            "file_path": "results\\Husky_Fase2_Llano_10\\My Behavior.onnx",
+            "reward": 9.718478004137674,
+            "creation_time": 1774645384.2548146,
+            "auxillary_file_paths": [
+                "results\\Husky_Fase2_Llano_10\\My Behavior\\My Behavior-1268830.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}
