@@ -136,9 +136,9 @@ public class HuskyAgent2 : Agent
         baseLink.linearVelocity = Vector3.zero;
         baseLink.angularVelocity = Vector3.zero;
 
-        
+
         // 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización)
-        float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+        /*float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         float randomDist = Random.Range(5f, terrainWidthX * 0.4f);
 
         Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
@@ -153,6 +153,56 @@ public class HuskyAgent2 : Agent
         }
 
         target.position = newTargetPos;
+        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
+        // 3. Spawn Aleatorio del Objetivo (A prueba de balas definitivo) 
+        Vector3 newTargetPos = Vector3.zero;
+        bool posicionValida = false;
+        int intentos = 0;
+
+        // Subimos la paciencia a 50 intentos
+        while (!posicionValida && intentos < 50)
+        {
+            float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            float randomDist = Random.Range(5f, terrainWidthX * 0.4f);
+            Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
+            newTargetPos = resetPos + offset;
+
+            if (terrainGenerator != null)
+            {
+                Terrain t = terrainGenerator.GetComponent<Terrain>();
+                newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
+            }
+
+            // Obligamos a Unity a registrar las colisiones
+            Physics.SyncTransforms();
+
+            // Lanzamos una esfera de TRES METROS (mucho más grande que tu aura)
+            Collider[] colliders = Physics.OverlapSphere(newTargetPos, 3.0f);
+            bool chocaConRoca = false;
+
+            foreach (var col in colliders)
+            {
+                if (col.CompareTag("Obstacle"))
+                {
+                    chocaConRoca = true;
+                    break;
+                }
+            }
+
+            if (!chocaConRoca)
+            {
+                posicionValida = true; // ¡Sitio libre!
+            }
+            intentos++;
+        }
+
+        // ALARMA: Si después de 50 intentos no encuentra sitio, nos avisa en la consola
+        if (!posicionValida)
+        {
+            Debug.LogWarning("[HuskyAgent] ¡Aviso! No se encontró un sitio libre para la meta tras 50 intentos. Revisa la densidad de rocas.");
+        }
+
+        target.position = newTargetPos;
         previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
 
         // NUEVO: Reset de la memoria anti-atascos de la lógica del profesor
@@ -161,6 +211,7 @@ public class HuskyAgent2 : Agent
         spinCounter = 0;
         lastPosition = transform.localPosition;
         lastRotation = transform.localRotation;
+
         
 
 
@@ -360,6 +411,19 @@ public class HuskyAgent2 : Agent
             lastPosition = transform.localPosition;
             lastRotation = transform.localRotation;
             checkTimer = 0;
+        }
+    }
+
+    // --- NUEVO: LÓGICA DE SEGURIDAD (Prevención de Daños) ---
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Si tocamos cualquier cosa etiquetada como "Obstaculo"...
+        if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            AddReward(-1.0f); // Multa máxima por romper el robot
+            // Debug.Log("[FALLO] Choque con obstáculo.");
+            DispararFlash(Color.magenta); 
+            EndEpisode(); // Muerte instantánea
         }
     }
 

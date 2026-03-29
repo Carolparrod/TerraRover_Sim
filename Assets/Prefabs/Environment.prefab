@@ -2586,7 +2586,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffe88556d37d66047abe4c7a7069676b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator4
-  terrainFamily: {fileID: 11400000, guid: 4edd21f285cd4214988fce8890108950, type: 2}
+  terrainFamily: {fileID: 11400000, guid: d2fb2a02a6cbc7f4283f8bfd369e0888, type: 2}
   startPoint: {fileID: 0}
   goalPoint: {fileID: 1311201417284416962}
   startClearRadius: 2
@@ -2732,8 +2732,8 @@ MonoBehaviour:
   - Obstacle
   m_RaysPerDirection: 7
   m_MaxRayDegrees: 70
-  m_SphereCastRadius: 0.5
-  m_RayLength: 10
+  m_SphereCastRadius: 0.1
+  m_RayLength: 2
   m_RayLayerMask:
     serializedVersion: 2
     m_Bits: 4294967291
@@ -5294,8 +5294,8 @@ MonoBehaviour:
   useFixedSeed: 0
   stuckRadiusThreshold: 0.1
   minSpinAngle: 2
-  stuckCheckInterval: 150
-  maxStuckPermitido: 2
+  stuckCheckInterval: 250
+  maxStuckPermitido: 3
   maxSpinPermitido: 3
   terrainWidthX: 50
   terrainLengthZ: 50

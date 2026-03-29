@@ -87,7 +87,7 @@ public class TerrainGenerator4 : MonoBehaviour
         SpawnObstacles(seed);
     }
 
-    void SpawnObstacles(int seed)
+    /*void SpawnObstacles(int seed)
     {
         Vector3 terrainSize = terrainData.size;
         Vector2 startPos2D = startPoint != null ? new Vector2(startPoint.localPosition.x, startPoint.localPosition.z) : Vector2.zero;
@@ -101,6 +101,40 @@ public class TerrainGenerator4 : MonoBehaviour
 
                 if (startPoint != null && Vector2.Distance(currentPos2D, startPos2D) < startClearRadius) continue;
                 if (goalPoint != null && Vector2.Distance(currentPos2D, goalPos2D) < goalClearRadius) continue;
+
+                if (Random.value < terrainFamily.obstacleDensity)
+                {
+                    float y = terrain.SampleHeight(new Vector3(x + transform.position.x, 0, z + transform.position.z));
+                    Vector3 spawnPos = new Vector3(x, y, z) + transform.position;
+
+                    GameObject prefab = terrainFamily.obstaclePrefabs[Random.Range(0, terrainFamily.obstaclePrefabs.Length)];
+                    GameObject obs = Instantiate(prefab, spawnPos, Quaternion.Euler(0, Random.Range(0, 360), 0));
+
+                    obs.transform.parent = this.transform;
+                    spawnedObstacles.Add(obs);
+                }
+            }
+        }
+    }*/
+    void SpawnObstacles(int seed)
+    {
+        Vector3 terrainSize = terrainData.size;
+
+        // Calculamos el centro exacto del terreno (donde nace el Husky)
+        Vector2 centerPos2D = new Vector2(terrainSize.x / 2f, terrainSize.z / 2f);
+        float radioSeguroHusky = 4.0f; // 4 metros libres de rocas en el centro
+
+        for (float x = 2; x < terrainSize.x - 2; x += 2f)
+        {
+            for (float z = 2; z < terrainSize.z - 2; z += 2f)
+            {
+                Vector2 currentPos2D = new Vector2(x, z);
+
+                // Si la roca que vamos a poner cae dentro de la zona segura del Husky, la saltamos
+                if (Vector2.Distance(currentPos2D, centerPos2D) < radioSeguroHusky)
+                {
+                    continue;
+                }
 
                 if (Random.value < terrainFamily.obstacleDensity)
                 {

@@ -9,15 +9,24 @@
                 "auxillary_file_paths": [
                     "results\\Husky_Fase2_Llano10_11\\My Behavior\\My Behavior-170549.pt"
                 ]
+            },
+            {
+                "steps": 184291,
+                "file_path": "results\\Husky_Fase2_Llano10_11\\My Behavior\\My Behavior-184291.onnx",
+                "reward": 12.321065321564674,
+                "creation_time": 1774688535.8109903,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase2_Llano10_11\\My Behavior\\My Behavior-184291.pt"
+                ]
             }
         ],
         "final_checkpoint": {
-            "steps": 170549,
+            "steps": 184291,
             "file_path": "results\\Husky_Fase2_Llano10_11\\My Behavior.onnx",
-            "reward": 9.937418531179429,
-            "creation_time": 1774648273.177668,
+            "reward": 12.321065321564674,
+            "creation_time": 1774688535.8109903,
             "auxillary_file_paths": [
-                "results\\Husky_Fase2_Llano10_11\\My Behavior\\My Behavior-170549.pt"
+                "results\\Husky_Fase2_Llano10_11\\My Behavior\\My Behavior-184291.pt"
             ]
         }
     },

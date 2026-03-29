@@ -1,0 +1,38 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 154542,
+                "file_path": "results\\Husky_Fase3_Obstaculos_01\\My Behavior\\My Behavior-154542.onnx",
+                "reward": null,
+                "creation_time": 1774717980.8621922,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_01\\My Behavior\\My Behavior-154542.pt"
+                ]
+            },
+            {
+                "steps": 306736,
+                "file_path": "results\\Husky_Fase3_Obstaculos_01\\My Behavior\\My Behavior-306736.onnx",
+                "reward": 8.457306857494746,
+                "creation_time": 1774718896.7242405,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_01\\My Behavior\\My Behavior-306736.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 306736,
+            "file_path": "results\\Husky_Fase3_Obstaculos_01\\My Behavior.onnx",
+            "reward": 8.457306857494746,
+            "creation_time": 1774718896.7242405,
+            "auxillary_file_paths": [
+                "results\\Husky_Fase3_Obstaculos_01\\My Behavior\\My Behavior-306736.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}
