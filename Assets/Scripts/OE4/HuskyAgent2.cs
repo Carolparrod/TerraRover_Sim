@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -18,7 +18,7 @@ public class HuskyAgent2 : Agent
     public ArticulationBody baseLink;
     public Transform target;
 
-    [Header("Par·metros de NormalizaciÛn (OE3)")]
+    [Header("Par√°metros de Normalizaci√≥n (OE3)")]
     public float maxLinearSpeed = 1.5f;
     public float maxAngularSpeed = 2f;
     // Nota: Ya no usamos maxDistanceToTarget para evitar colapso en mapas grandes [Problema 2]
@@ -28,12 +28,12 @@ public class HuskyAgent2 : Agent
     public int envSeed = 42;
     public bool useFixedSeed = false;
 
-    [Header("DetecciÛn de Atasco (OE4 - Anti-Hacking)")]
-    public float stuckRadiusThreshold = 0.1f; // 10 cm mÌnimos
-    public float minSpinAngle = 2.0f;         // 2 grados mÌnimos para considerarlo giro
+    [Header("Detecci√≥n de Atasco (OE4 - Anti-Hacking)")]
+    public float stuckRadiusThreshold = 0.1f; // 10 cm m√≠nimos
+    public float minSpinAngle = 2.0f;         // 2 grados m√≠nimos para considerarlo giro
     public int stuckCheckInterval = 50;       // Comprobamos cada 50 pasos (1 segundo)
-    public int maxStuckPermitido = 3;         // Falla si est· 3 segundos atascado
-    public int maxSpinPermitido = 10;          // Falla si est· 4 segundos girando sin acercarse
+    public int maxStuckPermitido = 3;         // Falla si est√° 3 segundos atascado
+    public int maxSpinPermitido = 10;          // Falla si est√° 4 segundos girando sin acercarse
 
     private int checkTimer = 0;
     private int stuckCounter = 0;
@@ -41,28 +41,32 @@ public class HuskyAgent2 : Agent
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
-    [Header("LÌmites del Terreno (OE6)")]
+    [Header("L√≠mites del Terreno (OE6)")]
     public float terrainWidthX = 50f;
     public float terrainLengthZ = 50f;
 
     [Header("Pesos de Recompensa (OE5)")]
     public float wAvance = 1.0f;
     public float wEstabilidad = 0.05f;
-    public float wEnergia = 0.0001f; // Reducido para evitar par·lisis
-    public float wAlineacion = 0.01f; // NUEVO (Fase 2): Castigo por desalineaciÛn
+    public float wEnergia = 0.0001f; // Reducido para evitar par√°lisis
+    public float wAlineacion = 0.01f; // NUEVO (Fase 2): Castigo por desalineaci√≥n
 
     private Vector3 startPosition;
     private Quaternion startRotation;
     private float previousDistanceToTarget;
 
-    [Header("ConfiguraciÛn de Ruedas")]
+    [Header("Configuraci√≥n de Ruedas")]
     public ArticulationBody[] leftWheels;
     public ArticulationBody[] rightWheels;
     public float trackWidth = 0.55f;
     public float wheelRadius = 0.165f;
 
+    [Header("Penalizaci√≥n de Proximidad LiDAR (OE6)")]
+    [Tooltip("Radio de peligro: distancia normalizada [0-1] a partir de la cual empieza el castigo")]
+    public float proximityDangerThreshold = 0.3f; // 30% del rango del rayo
+    [Tooltip("Peso m√°ximo de la penalizaci√≥n cuando el obst√°culo est√° a distancia 0")]
+    public float wProximidad = 0.5f;
 
-   
 
     public override void Initialize()
     {
@@ -81,7 +85,7 @@ public class HuskyAgent2 : Agent
         if (groundTerrain != null && groundTerrain.materialTemplate != null)
         {
             // Creamos un clon del material SOLO para este rover. 
-            // AsÌ los destellos no afectan a los otros mapas paralelos.
+            // As√≠ los destellos no afectan a los otros mapas paralelos.
             groundTerrain.materialTemplate = new Material(groundTerrain.materialTemplate);
             originalGroundColor = groundTerrain.materialTemplate.color;
         }
@@ -116,7 +120,7 @@ public class HuskyAgent2 : Agent
             Terrain t = terrainGenerator.GetComponent<Terrain>();
             Vector3 terrainOrigin = t.transform.position;
 
-            // Calculamos el centro exacto de ESTE mapa especÌfico
+            // Calculamos el centro exacto de ESTE mapa espec√≠fico
             float centerX = terrainOrigin.x + (terrainWidthX / 2f);
             float centerZ = terrainOrigin.z + (terrainLengthZ / 2f);
 
@@ -127,8 +131,8 @@ public class HuskyAgent2 : Agent
             resetPos.y = groundY + 0.2f;
         }
 
-        // Teletransportamos al robot al centro, d·ndole tambiÈn una rotaciÛn inicial aleatoria
-        // para maximizar la generalizaciÛn en todas las orientaciones posibles.
+        // Teletransportamos al robot al centro, d√°ndole tambi√©n una rotaci√≥n inicial aleatoria
+        // para maximizar la generalizaci√≥n en todas las orientaciones posibles.
         float randomYaw = Random.Range(0f, 360f);
         Quaternion randomSpawnRotation = Quaternion.Euler(0, randomYaw, 0);
 
@@ -137,7 +141,7 @@ public class HuskyAgent2 : Agent
         baseLink.angularVelocity = Vector3.zero;
 
 
-        // 4. Spawn Aleatorio del Objetivo (Problema 3 - GeneralizaciÛn)
+        // 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalizaci√≥n)
         /*float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         float randomDist = Random.Range(5f, terrainWidthX * 0.4f);
 
@@ -176,7 +180,7 @@ public class HuskyAgent2 : Agent
             // Obligamos a Unity a registrar las colisiones
             Physics.SyncTransforms();
 
-            // Lanzamos una esfera de TRES METROS (mucho m·s grande que tu aura)
+            // Lanzamos una esfera de TRES METROS (mucho m√°s grande que tu aura)
             Collider[] colliders = Physics.OverlapSphere(newTargetPos, 3.0f);
             bool chocaConRoca = false;
 
@@ -191,21 +195,21 @@ public class HuskyAgent2 : Agent
 
             if (!chocaConRoca)
             {
-                posicionValida = true; // °Sitio libre!
+                posicionValida = true; // ¬°Sitio libre!
             }
             intentos++;
         }
 
-        // ALARMA: Si despuÈs de 50 intentos no encuentra sitio, nos avisa en la consola
+        // ALARMA: Si despu√©s de 50 intentos no encuentra sitio, nos avisa en la consola
         if (!posicionValida)
         {
-            Debug.LogWarning("[HuskyAgent] °Aviso! No se encontrÛ un sitio libre para la meta tras 50 intentos. Revisa la densidad de rocas.");
+            Debug.LogWarning("[HuskyAgent] ¬°Aviso! No se encontr√≥ un sitio libre para la meta tras 50 intentos. Revisa la densidad de rocas.");
         }
 
         target.position = newTargetPos;
         previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // NUEVO: Reset de la memoria anti-atascos de la lÛgica del profesor
+        // NUEVO: Reset de la memoria anti-atascos de la l√≥gica del profesor
         checkTimer = 0;
         stuckCounter = 0;
         spinCounter = 0;
@@ -237,7 +241,7 @@ public class HuskyAgent2 : Agent
         groundTerrain.materialTemplate.color = originalGroundColor;
     }
 
-    // FunciÛn para disparar el color f·cilmente
+    // Funci√≥n para disparar el color f√°cilmente
     private void DispararFlash(Color colorFlash)
     {
         if (groundTerrain != null && groundTerrain.materialTemplate != null)
@@ -252,7 +256,7 @@ public class HuskyAgent2 : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // IMU: OrientaciÛn local (Invariante a posiciÛn global) [cite: 8]
+        // IMU: Orientaci√≥n local (Invariante a posici√≥n global) [cite: 8]
         sensor.AddObservation(transform.up);
         sensor.AddObservation(transform.forward);
 
@@ -263,12 +267,12 @@ public class HuskyAgent2 : Agent
         Vector3 localAngularVelocity = transform.InverseTransformDirection(baseLink.angularVelocity);
         sensor.AddObservation(Vector3.ClampMagnitude(localAngularVelocity / maxAngularSpeed, 1f));
 
-        //Vector direcciÛn normalizado (Problema 2 - Out of Distribution) 
+        //Vector direcci√≥n normalizado (Problema 2 - Out of Distribution) 
         Vector3 vectorToTarget = target.position - transform.position;
         Vector3 localDirToTarget = transform.InverseTransformDirection(vectorToTarget.normalized);
         sensor.AddObservation(localDirToTarget);
 
-        // Distancia relativa (opcional, pero normalizada siempre entre 0 y 1 para mapas de cualquier tamaÒo)
+        // Distancia relativa (opcional, pero normalizada siempre entre 0 y 1 para mapas de cualquier tama√±o)
         sensor.AddObservation(Mathf.Clamp01(vectorToTarget.magnitude / 100f));
     }
 
@@ -286,17 +290,17 @@ public class HuskyAgent2 : Agent
         AddReward(distanceDifference * wAvance);
         previousDistanceToTarget = currentDistance;
 
-        // 2. PenalizaciÛn por Tiempo (Suave para evitar temeridad)
+        // 2. Penalizaci√≥n por Tiempo (Suave para evitar temeridad)
         AddReward(-0.0005f);
 
-        // 3. Estabilidad Cuadr·tica (Castiga solo inclinaciones fuertes) 
+        // 3. Estabilidad Cuadr√°tica (Castiga solo inclinaciones fuertes) 
         float tilt = 1.0f - transform.up.y;
         if (tilt > 0.1f)
         {
             AddReward(-(tilt * tilt) * wEstabilidad);
         }
 
-        // 4. NUEVO (Fase 2): PenalizaciÛn estricta por DesalineaciÛn (Gradiente continuo)
+        //4. NUEVO (Fase 2): Penalizaci√≥n estricta por Desalineaci√≥n (Gradiente continuo)
         float currentSpeed = baseLink.linearVelocity.magnitude;
 
         if (currentSpeed > 0.1f)
@@ -304,27 +308,47 @@ public class HuskyAgent2 : Agent
             Vector3 moveDirection = baseLink.linearVelocity.normalized;
             float alignment = Vector3.Dot(transform.forward, moveDirection);
 
-            // Si no est· alineado casi perfectamente hacia adelante (margen de ~36 grados)
-            if (alignment < 0.8f)
+            // Si no est√° alineado casi perfectamente hacia adelante (margen de ~36 grados)
+            if (alignment < 0.5f) //if (alignment < 0.8f)
             {
-                // La fÛrmula (alignment - 1.0f) garantiza que la penalizaciÛn sea progresiva.
-                // Cuanto m·s se desvÌe del 1.0 perfecto, mayor ser· el castigo (negativo).
+                // La f√≥rmula (alignment - 1.0f) garantiza que la penalizaci√≥n sea progresiva.
+                // Cuanto m√°s se desv√≠e del 1.0 perfecto, mayor ser√° el castigo (negativo).
                 AddReward((alignment - 1.0f) * currentSpeed * wAlineacion);
             }
         }
 
-        // 5. NUEVO: La Br˙jula del Dolor (Romper la simetrÌa est·tica/tembleque)
-        // Calculamos hacia dÛnde mira el robot en relaciÛn a la meta (independiente de si se mueve o no)
-        Vector3 dirToTarget = (target.position - transform.position).normalized;
-        float lookAlignment = Vector3.Dot(transform.forward, dirToTarget);
+        // 5. NUEVO: La Br√∫jula del Dolor (Romper la simetr√≠a est√°tica/tembleque)
+        // Calculamos hacia d√≥nde mira el robot en relaci√≥n a la meta (independiente de si se mueve o no)
+        /*Vector3 dirToTarget = (target.position - transform.position).normalized;                                       /////// I
+        /*float lookAlignment = Vector3.Dot(transform.forward, dirToTarget);                                             //////  V
 
-        // Si no est· mirando hacia la meta (lookAlignment es menor a 0.5, aprox 60 grados de desviaciÛn)
-        // Esto le castiga por el simple hecho de darle la espalda al objetivo, forz·ndolo a girar el morro.
-        if (lookAlignment < 0.5f)
-        {
+        // Si no est√° mirando hacia la meta (lookAlignment es menor a 0.5, aprox 60 grados de desviaci√≥n)
+        // Esto le castiga por el simple hecho de darle la espalda al objetivo, forz√°ndolo a girar el morro.
+        if (lookAlignment < 0.0f) //if (lookAlignment < 0.5f)                                                           ////////////Esta es la funcion normal, la de abajo es por si se queda cerca el rover del objetivo y hace algo raro
+            {
             // El multiplicador 0.002f es bajito para que no se asuste, 
             // pero lo suficiente para que el "tembleque" infinito le salga caro.
             AddReward((lookAlignment - 1.0f) * 0.002f);
+        }*/
+        // Medimos a qu√© distancia est√° de la meta
+        /*float distanciaALaMeta = Vector3.Distance(transform.position, target.position);
+
+        // SOLO le cobramos el impuesto de la Br√∫jula si est√° LEJOS de la meta
+        if (distanciaALaMeta > 3.0f)
+        {
+            Vector3 dirToTarget = (target.position - transform.position).normalized;
+            float lookAlignment = Vector3.Dot(transform.forward, dirToTarget);
+
+            if (lookAlignment < 0.0f)
+            {
+                AddReward((lookAlignment - 1.0f) * 0.002f);
+            }
+        }*/
+        // 6. NUEVO (Fase 3 - OE6): Penalizaci√≥n progresiva por proximidad a obst√°culos
+        float penalizacionLidar = CalcularPenalizacionProximidad();
+        if (penalizacionLidar < 0f)
+        {
+            AddReward(penalizacionLidar);
         }
 
     }
@@ -333,21 +357,21 @@ public class HuskyAgent2 : Agent
     {
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // …xito
+        // √âxito
         if (distanceToTarget <= successDistance)
         {
             AddReward(2.0f);
-            //Debug.Log($"[…XITO] Meta alcanzada. Recompensa otorgada.");
+            //Debug.Log($"[√âXITO] Meta alcanzada. Recompensa otorgada.");
             DispararFlash(Color.green); // <-- LUZ VERDE
             EndEpisode();
             return;
         }
 
-        /*// Vuelco o CaÌda 
+        /*// Vuelco o Ca√≠da 
         if (transform.up.y < 0.2f || transform.position.y < -5f)
         {
             AddReward(-1.0f);
-            Debug.Log($"[FALLO - CAÕDA] El robot cayÛ al vacÌo. Altura Y = {transform.position.y}");
+            Debug.Log($"[FALLO - CA√çDA] El robot cay√≥ al vac√≠o. Altura Y = {transform.position.y}");
             EndEpisode();
             return;
         }*/
@@ -355,14 +379,14 @@ public class HuskyAgent2 : Agent
         if (transform.up.y < 0.2f || relativeY < -5f)
         {
             AddReward(-1.0f);
-            //Debug.Log($"[FALLO - CAÕDA] El robot cayÛ al vacÌo.");
+            //Debug.Log($"[FALLO - CA√çDA] El robot cay√≥ al vac√≠o.");
             DispararFlash(Color.blue); 
             EndEpisode();
             return;
         }
 
     
-        // --- L”GICA ANTI-ATASCO (Filtro de Desplazamiento Neto) ---
+        // --- L√ìGICA ANTI-ATASCO (Filtro de Desplazamiento Neto) ---
         checkTimer++;
         if (checkTimer >= stuckCheckInterval)
         {
@@ -379,7 +403,7 @@ public class HuskyAgent2 : Agent
             {
                 if (netAngleTurned >= 45.0f)
                 {
-                    // No avanza, pero ha girado de verdad (MÌnimo 45 grados).
+                    // No avanza, pero ha girado de verdad (M√≠nimo 45 grados).
                     spinCounter++;
                     stuckCounter = 0;
 
@@ -393,7 +417,7 @@ public class HuskyAgent2 : Agent
                 }
                 else
                 {
-                    // Tembleque o Congelado: Ni avanza 0.5m, ni gira 45∫.
+                    // Tembleque o Congelado: Ni avanza 0.5m, ni gira 45¬∫.
                     stuckCounter++;
                     spinCounter = 0;
 
@@ -414,16 +438,16 @@ public class HuskyAgent2 : Agent
         }
     }
 
-    // --- NUEVO: L”GICA DE SEGURIDAD (PrevenciÛn de DaÒos) ---
+    // --- NUEVO: L√ìGICA DE SEGURIDAD (Prevenci√≥n de Da√±os) ---
     private void OnCollisionEnter(Collision collision)
     {
         // Si tocamos cualquier cosa etiquetada como "Obstaculo"...
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            AddReward(-1.0f); // Multa m·xima por romper el robot
-            // Debug.Log("[FALLO] Choque con obst·culo.");
+            AddReward(-1.0f); // Multa m√°xima por romper el robot
+            // Debug.Log("[FALLO] Choque con obst√°culo.");
             DispararFlash(Color.magenta); 
-            EndEpisode(); // Muerte instant·nea
+            EndEpisode(); // Muerte instant√°nea
         }
     }
 
@@ -441,7 +465,7 @@ public class HuskyAgent2 : Agent
         AplicarVelocidadAngular(leftWheels, leftVel);
         AplicarVelocidadAngular(rightWheels, rightVel);
 
-        // PenalizaciÛn por volantazo 
+        // Penalizaci√≥n por volantazo 
         AddReward(-Mathf.Abs(turnAction) * wEnergia);
 
         
@@ -463,5 +487,49 @@ public class HuskyAgent2 : Agent
             drive.targetVelocity = targetAngularVel;
             wheel.xDrive = drive;
         }
+    }
+
+    // A√±adir al bloque de using si no est√° ya:
+    // using Unity.MLAgents.Sensors;
+
+    // --- NUEVO M√âTODO: Lee el LiDAR y devuelve la penalizaci√≥n de proximidad ---
+    private float CalcularPenalizacionProximidad()
+    {
+        // Obtenemos todos los RayPerceptionSensor del agente (puede haber m√°s de uno)
+        var raySensors = GetComponentsInChildren<Unity.MLAgents.Sensors.RayPerceptionSensorComponent3D>();
+
+        float maxThreat = 0f; // Guardamos la amenaza M√ÅS CERCANA de todos los rayos
+
+        foreach (var sensorComp in raySensors)
+        {
+            // Pedimos el √∫ltimo resultado de percepci√≥n del sensor
+            var output = sensorComp.RaySensor?.RayPerceptionOutput;
+            if (output == null) continue;
+
+            foreach (var rayResult in output.RayOutputs)
+            {
+                // rayResult.HitFraction: 0.0 = impacto justo en la nariz, 1.0 = no toc√≥ nada
+                // Solo nos importan los rayos que DETECTARON un obst√°culo
+                if (!rayResult.HasHit) continue;
+
+                // Opcional pero recomendado: filtrar por tag para ignorar el suelo
+                // Si tu LiDAR ya tiene DetectableTags configurado solo para "Obstacle", no es necesario
+                // if (rayResult.HitGameObject != null && !rayResult.HitGameObject.CompareTag("Obstacle")) continue;
+
+                // Calculamos la "amenaza": cuanto m√°s cerca (HitFraction ‚Üí 0), mayor la amenaza
+                float threat = 1.0f - rayResult.HitFraction;
+
+                // Solo nos importa si supera el umbral de peligro
+                // proximityDangerThreshold define desde qu√© distancia relativa empieza el castigo
+                float normalizedThreat = Mathf.InverseLerp(1.0f - proximityDangerThreshold, 1.0f, threat);
+
+                if (normalizedThreat > maxThreat)
+                    maxThreat = normalizedThreat;
+            }
+        }
+
+        // La penalizaci√≥n es cuadr√°tica para que sea suave de lejos y fuerte de cerca
+        // maxThreat=0 ‚Üí penalizaci√≥n=0 | maxThreat=1 ‚Üí penalizaci√≥n=wProximidad
+        return -(maxThreat * maxThreat) * wProximidad;
     }
 }

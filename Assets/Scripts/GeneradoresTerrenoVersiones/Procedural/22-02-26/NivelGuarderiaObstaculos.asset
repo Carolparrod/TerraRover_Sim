@@ -15,7 +15,7 @@ MonoBehaviour:
   noiseScale: 0.01
   noiseAmplitude: 0
   maxSlopeDegrees: 0
-  obstacleDensity: 0.02
+  obstacleDensity: 0.03
   obstaclePrefabs:
   - {fileID: 7162602615161990867, guid: 520381c93e2f9734bab9f23f83618de2, type: 3}
   - {fileID: 2602975220198116835, guid: 10038933d2c22814dbaff12551a38547, type: 3}

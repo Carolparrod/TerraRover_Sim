@@ -116,7 +116,7 @@ public class TerrainGenerator4 : MonoBehaviour
             }
         }
     }*/
-    void SpawnObstacles(int seed)
+    /*void SpawnObstacles(int seed)
     {
         Vector3 terrainSize = terrainData.size;
 
@@ -149,13 +149,65 @@ public class TerrainGenerator4 : MonoBehaviour
                 }
             }
         }
-    }
+    }*/
+    void SpawnObstacles(int seed)
+    {
+        Vector3 terrainSize = terrainData.size;
+        Vector2 centerPos2D = new Vector2(terrainSize.x / 2f, terrainSize.z / 2f);
+        float radioSeguroHusky = 4.0f;
 
+        // --- CHIVATOS AÑADIDOS ---
+        int huecosTotales = 0;
+        int rocasCreadas = 0;
+        // -------------------------
+
+        for (float x = 2; x < terrainSize.x - 2; x += 2f)
+        {
+            for (float z = 2; z < terrainSize.z - 2; z += 2f)
+            {
+                huecosTotales++; // Contamos cuántas veces se ejecuta el bucle
+
+                Vector2 currentPos2D = new Vector2(x, z);
+
+                if (Vector2.Distance(currentPos2D, centerPos2D) < radioSeguroHusky)
+                {
+                    continue;
+                }
+
+                if (Random.value < terrainFamily.obstacleDensity)
+                {
+                    float y = terrain.SampleHeight(new Vector3(x + transform.position.x, 0, z + transform.position.z));
+                    Vector3 spawnPos = new Vector3(x, y, z) + transform.position;
+
+                    GameObject prefab = terrainFamily.obstaclePrefabs[Random.Range(0, terrainFamily.obstaclePrefabs.Length)];
+                    GameObject obs = Instantiate(prefab, spawnPos, Quaternion.Euler(0, Random.Range(0, 360), 0));
+
+                    obs.transform.parent = this.transform;
+                    spawnedObstacles.Add(obs);
+
+                    rocasCreadas++; // Contamos las rocas reales
+                }
+            }
+        }
+
+        // --- LA CONFESIÓN FINAL ---
+        //Debug.Log($"[REPORTE TERRENO] Tamaño real leído: {terrainSize.x}x{terrainSize.z} | Huecos revisados: {huecosTotales} | Densidad leída: {terrainFamily.obstacleDensity} | Rocas creadas: {rocasCreadas}");
+    }
+    /*
     void ClearObstacles()
     {
         foreach (var obj in spawnedObstacles)
         {
             if (obj != null) DestroyImmediate(obj);
+        }
+        spawnedObstacles.Clear();
+    }*/ //este método causaba problemas al regenerar el terreno varias veces, porque DestroyImmediate no es seguro de usar en tiempo de ejecución. Lo cambiamos por Destroy, que marca los objetos para destrucción al final del frame, evitando errores.
+    void ClearObstacles()
+    {
+        foreach (var obj in spawnedObstacles)
+        {
+            // Usamos Destroy en lugar de DestroyImmediate
+            if (obj != null) Destroy(obj);
         }
         spawnedObstacles.Clear();
     }

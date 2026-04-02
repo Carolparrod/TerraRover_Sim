@@ -1,0 +1,29 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 205091,
+                "file_path": "results\\Husky_Fase3_03_Miopia_01_05_02\\My Behavior\\My Behavior-205091.onnx",
+                "reward": 6.921262233359058,
+                "creation_time": 1774888316.6211123,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_03_Miopia_01_05_02\\My Behavior\\My Behavior-205091.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 205091,
+            "file_path": "results\\Husky_Fase3_03_Miopia_01_05_02\\My Behavior.onnx",
+            "reward": 6.921262233359058,
+            "creation_time": 1774888316.6211123,
+            "auxillary_file_paths": [
+                "results\\Husky_Fase3_03_Miopia_01_05_02\\My Behavior\\My Behavior-205091.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}

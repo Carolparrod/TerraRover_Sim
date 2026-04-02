@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acab582014521184c9e852725fb407e8, type: 3}
+  m_Name: NivelGuarderiaObstaculosDificil
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainFam4
+  noiseScale: 0.01
+  noiseAmplitude: 0
+  maxSlopeDegrees: 0
+  obstacleDensity: 0.035
+  obstaclePrefabs:
+  - {fileID: 7162602615161990867, guid: 520381c93e2f9734bab9f23f83618de2, type: 3}
+  - {fileID: 2602975220198116835, guid: 10038933d2c22814dbaff12551a38547, type: 3}
+  - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
+  hillScale: 0.01
+  hillAmplitude: 0
+  holeScale: 1
+  holeDepth: 0
+  holeSharpness: 1

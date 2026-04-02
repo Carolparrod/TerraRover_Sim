@@ -1,0 +1,47 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 97349,
+                "file_path": "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-97349.onnx",
+                "reward": 10.161946523757209,
+                "creation_time": 1775125022.1064305,
+                "auxillary_file_paths": [
+                    "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-97349.pt"
+                ]
+            },
+            {
+                "steps": 186057,
+                "file_path": "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-186057.onnx",
+                "reward": 9.551925499923527,
+                "creation_time": 1775125950.10049,
+                "auxillary_file_paths": [
+                    "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-186057.pt"
+                ]
+            },
+            {
+                "steps": 342871,
+                "file_path": "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-342871.onnx",
+                "reward": 11.55716077486674,
+                "creation_time": 1775126718.658026,
+                "auxillary_file_paths": [
+                    "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-342871.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 342871,
+            "file_path": "results\\HuskyV3_F2_02\\My Behavior.onnx",
+            "reward": 11.55716077486674,
+            "creation_time": 1775126718.658026,
+            "auxillary_file_paths": [
+                "results\\HuskyV3_F2_02\\My Behavior\\My Behavior-342871.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}

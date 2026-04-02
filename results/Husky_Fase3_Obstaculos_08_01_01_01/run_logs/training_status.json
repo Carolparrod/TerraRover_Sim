@@ -1,0 +1,65 @@
+{
+    "My Behavior": {
+        "checkpoints": [
+            {
+                "steps": 482993,
+                "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-482993.onnx",
+                "reward": null,
+                "creation_time": 1774978489.4041111,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-482993.pt"
+                ]
+            },
+            {
+                "steps": 499994,
+                "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-499994.onnx",
+                "reward": -17.159414936053125,
+                "creation_time": 1774978623.852787,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-499994.pt"
+                ]
+            },
+            {
+                "steps": 999912,
+                "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-999912.onnx",
+                "reward": -9.447619132697582,
+                "creation_time": 1774980228.2394192,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-999912.pt"
+                ]
+            },
+            {
+                "steps": 1293203,
+                "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-1293203.onnx",
+                "reward": -8.293007962013546,
+                "creation_time": 1774981130.1177511,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-1293203.pt"
+                ]
+            },
+            {
+                "steps": 1407000,
+                "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-1407000.onnx",
+                "reward": null,
+                "creation_time": 1775060540.6338267,
+                "auxillary_file_paths": [
+                    "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-1407000.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1407000,
+            "file_path": "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior.onnx",
+            "reward": null,
+            "creation_time": 1775060540.6338267,
+            "auxillary_file_paths": [
+                "results\\Husky_Fase3_Obstaculos_08_01_01_01\\My Behavior\\My Behavior-1407000.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.5.1+cu121"
+    }
+}

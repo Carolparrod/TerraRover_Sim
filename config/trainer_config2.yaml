@@ -19,6 +19,6 @@ behaviors:
       extrinsic:
         gamma: 0.99
         strength: 1.0
-    max_steps: 1500000       # Sube a 2M para asegurar convergencia en terrenos irregulares [cite: 1]
+    max_steps: 2000000       # Sube a 2M para asegurar convergencia en terrenos irregulares [cite: 1]
     time_horizon: 128
     summary_freq: 20000
