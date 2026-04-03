@@ -345,11 +345,11 @@ public class HuskyAgent2 : Agent
             }
         }*/
         // 6. NUEVO (Fase 3 - OE6): Penalización progresiva por proximidad a obstáculos
-        float penalizacionLidar = CalcularPenalizacionProximidad();
+        /*float penalizacionLidar = CalcularPenalizacionProximidad();
         if (penalizacionLidar < 0f)
         {
             AddReward(penalizacionLidar);
-        }
+        }*/
 
     }
 

@@ -2586,7 +2586,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffe88556d37d66047abe4c7a7069676b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator4
-  terrainFamily: {fileID: 11400000, guid: d2fb2a02a6cbc7f4283f8bfd369e0888, type: 2}
+  terrainFamily: {fileID: 11400000, guid: db84dfba67c0c6741a90a97665a2acf4, type: 2}
   startPoint: {fileID: 0}
   goalPoint: {fileID: 1311201417284416962}
   startClearRadius: 2
@@ -5258,9 +5258,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: 7a4f0bcfa9fc2d64bb3161655751bfdb, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
-  m_BehaviorType: 2
+  m_BehaviorType: 0
   m_BehaviorName: My Behavior
   TeamId: 0
   m_UseChildSensors: 1
@@ -5292,7 +5292,7 @@ MonoBehaviour:
   successDistance: 2
   envSeed: 42
   useFixedSeed: 0
-  stuckRadiusThreshold: 0.1
+  stuckRadiusThreshold: 0.05
   minSpinAngle: 2
   stuckCheckInterval: 100
   maxStuckPermitido: 5
@@ -5312,7 +5312,7 @@ MonoBehaviour:
   trackWidth: 0.55
   wheelRadius: 0.165
   proximityDangerThreshold: 0.3
-  wProximidad: 0.1
+  wProximidad: 0.3
 --- !u!114 &7423708300423774834
 MonoBehaviour:
   m_ObjectHideFlags: 0
