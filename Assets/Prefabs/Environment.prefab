@@ -5292,6 +5292,10 @@ MonoBehaviour:
   successDistance: 2
   envSeed: 42
   useFixedSeed: 0
+  useSeedList: 1
+  seedList: 
+  numSeedsToGenerate: 100
+  masterSeed: 12345
   stuckRadiusThreshold: 0.05
   minSpinAngle: 2
   stuckCheckInterval: 100
@@ -5303,6 +5307,8 @@ MonoBehaviour:
   wEstabilidad: 0.01
   wEnergia: 0.001
   wAlineacion: 0.005
+  guardarMetricas: 1
+  csvFileName: HuskyAgent2_metricas_V3_F3_02.csv
   leftWheels:
   - {fileID: 8126085486559934407}
   - {fileID: 2425666190111029143}
@@ -5312,7 +5318,7 @@ MonoBehaviour:
   trackWidth: 0.55
   wheelRadius: 0.165
   proximityDangerThreshold: 0.3
-  wProximidad: 0.3
+  wProximidad: 0.4
 --- !u!114 &7423708300423774834
 MonoBehaviour:
   m_ObjectHideFlags: 0

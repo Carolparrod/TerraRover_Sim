@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.IO;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -25,8 +26,29 @@ public class HuskyAgent2 : Agent
 
     [Header("Condiciones de Episodio (OE4)")]
     public float successDistance = 2.0f;
-    public int envSeed = 42;
-    public bool useFixedSeed = false;
+    public int   envSeed      = 42;
+    public bool  useFixedSeed = false;
+
+    [Tooltip("Activa el uso de la lista de semillas para evaluación controlada (OE8).")]
+    public bool  useSeedList = false;
+    [Tooltip("Lista de semillas. Rellenar con el botón derecho → Generar lista de semillas (OE8).")]
+    public int[] seedList = new int[0];
+    private int  seedIndex = 0;
+
+    [Tooltip("Número de semillas a generar automáticamente")]
+    public int numSeedsToGenerate = 100;
+    [Tooltip("Semilla maestra para generar la lista. Usar el MISMO valor en HuskyAgent2 y HuskyHeuristic para garantizar terrenos idénticos.")]
+    public int masterSeed = 12345;
+
+    [ContextMenu("Generar lista de semillas (OE8)")]
+    private void GenerarListaSemillas()
+    {
+        var rng = new System.Random(masterSeed);
+        seedList = new int[numSeedsToGenerate];
+        for (int i = 0; i < numSeedsToGenerate; i++)
+            seedList[i] = rng.Next(1, 1000000);
+        Debug.Log($"[HuskyAgent2] Lista de {numSeedsToGenerate} semillas generada con masterSeed={masterSeed}.");
+    }
 
     [Header("Detección de Atasco (OE4 - Anti-Hacking)")]
     public float stuckRadiusThreshold = 0.1f; // 10 cm mínimos
@@ -54,6 +76,22 @@ public class HuskyAgent2 : Agent
     private Vector3 startPosition;
     private Quaternion startRotation;
     private float previousDistanceToTarget;
+
+    // -----------------------------------------------------------------------
+    // MÉTRICAS (OE8)
+    // -----------------------------------------------------------------------
+    [Header("Registro de Métricas (OE8)")]
+    [Tooltip("Activa el guardado de métricas en CSV para análisis estadístico")]
+    public bool   guardarMetricas = true;
+    public string csvFileName     = "HuskyAgent2_metricas.csv";
+
+    private StreamWriter csvWriter;
+    private int   episodeCount           = 0;
+    private int   stepCount              = 0;
+    private int   totalSuccesses         = 0;
+    private int   totalFailures          = 0;
+    private float episodeStartTime       = 0f;
+    private float totalEnergyThisEpisode = 0f;
 
     [Header("Configuración de Ruedas")]
     public ArticulationBody[] leftWheels;
@@ -84,10 +122,22 @@ public class HuskyAgent2 : Agent
 
         if (groundTerrain != null && groundTerrain.materialTemplate != null)
         {
-            // Creamos un clon del material SOLO para este rover. 
+            // Creamos un clon del material SOLO para este rover.
             // Así los destellos no afectan a los otros mapas paralelos.
             groundTerrain.materialTemplate = new Material(groundTerrain.materialTemplate);
             originalGroundColor = groundTerrain.materialTemplate.color;
+        }
+
+        if (guardarMetricas)
+            InicializarCSV();
+    }
+
+    private void OnDestroy()
+    {
+        if (csvWriter != null)
+        {
+            csvWriter.Flush();
+            csvWriter.Close();
         }
     }
 
@@ -107,9 +157,37 @@ public class HuskyAgent2 : Agent
     {
 
 
-        int currentSeed = useFixedSeed ? envSeed : Random.Range(0, 999999);
+        episodeCount++;
+        stepCount              = 0;
+        totalEnergyThisEpisode = 0f;
+        episodeStartTime       = Time.time;
 
-        // 1. Generar Terreno [cite: 7]
+        int currentSeed;
+        if (useFixedSeed)
+        {
+            currentSeed = envSeed;                          // Modo depuración: semilla única
+        }
+        else if (useSeedList && seedList != null && seedList.Length > 0)
+        {
+            if (seedIndex >= seedList.Length)
+            {
+                // Test completado: cerrar CSV y parar el Play Mode
+                Debug.Log($"[HuskyAgent2] ✅ Test OE8 completado: {seedList.Length} episodios evaluados. CSV guardado en: {System.IO.Path.Combine(Application.persistentDataPath, csvFileName)}");
+                if (csvWriter != null) { csvWriter.Flush(); csvWriter.Close(); csvWriter = null; }
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                return;
+            }
+            currentSeed = seedList[seedIndex];  // Modo evaluación: lista ordenada
+            seedIndex++;
+        }
+        else
+        {
+            currentSeed = Random.Range(0, 999999);          // Modo entrenamiento: aleatorio
+        }
+
+        // 1. Generar Terreno
         if (terrainGenerator != null) terrainGenerator.GenerateTerrain(currentSeed);
 
         // 3. Posicionar Rover (Spawn Central para evitar sesgo direccional)
@@ -278,6 +356,7 @@ public class HuskyAgent2 : Agent
 
     private void FixedUpdate()
     {
+        stepCount++;
         CalculateDenseRewards();
         CheckTerminalStates();
     }
@@ -345,11 +424,11 @@ public class HuskyAgent2 : Agent
             }
         }*/
         // 6. NUEVO (Fase 3 - OE6): Penalización progresiva por proximidad a obstáculos
-        /*float penalizacionLidar = CalcularPenalizacionProximidad();
+        float penalizacionLidar = CalcularPenalizacionProximidad();
         if (penalizacionLidar < 0f)
         {
             AddReward(penalizacionLidar);
-        }*/
+        }
 
     }
 
@@ -361,8 +440,9 @@ public class HuskyAgent2 : Agent
         if (distanceToTarget <= successDistance)
         {
             AddReward(2.0f);
-            //Debug.Log($"[ÉXITO] Meta alcanzada. Recompensa otorgada.");
-            DispararFlash(Color.green); // <-- LUZ VERDE
+            totalSuccesses++;
+            RegistrarEpisodio("SUCCESS", distanceToTarget);
+            DispararFlash(Color.green);
             EndEpisode();
             return;
         }
@@ -379,8 +459,9 @@ public class HuskyAgent2 : Agent
         if (transform.up.y < 0.2f || relativeY < -5f)
         {
             AddReward(-1.0f);
-            //Debug.Log($"[FALLO - CAÍDA] El robot cayó al vacío.");
-            DispararFlash(Color.blue); 
+            totalFailures++;
+            RegistrarEpisodio("FALL", distanceToTarget);
+            DispararFlash(Color.blue);
             EndEpisode();
             return;
         }
@@ -410,6 +491,8 @@ public class HuskyAgent2 : Agent
                     if (spinCounter >= maxSpinPermitido)
                     {
                         AddReward(-1.0f);
+                        totalFailures++;
+                        RegistrarEpisodio("SPIN", distanceToTarget);
                         DispararFlash(Color.yellow);
                         EndEpisode();
                         return;
@@ -424,6 +507,8 @@ public class HuskyAgent2 : Agent
                     if (stuckCounter >= maxStuckPermitido)
                     {
                         AddReward(-1.0f);
+                        totalFailures++;
+                        RegistrarEpisodio("STUCK", distanceToTarget);
                         DispararFlash(Color.red);
                         EndEpisode();
                         return;
@@ -444,10 +529,12 @@ public class HuskyAgent2 : Agent
         // Si tocamos cualquier cosa etiquetada como "Obstaculo"...
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            AddReward(-1.0f); // Multa máxima por romper el robot
-            // Debug.Log("[FALLO] Choque con obstáculo.");
-            DispararFlash(Color.magenta); 
-            EndEpisode(); // Muerte instantánea
+            AddReward(-1.0f);
+            totalFailures++;
+            float dist = Vector3.Distance(transform.position, target.position);
+            RegistrarEpisodio("COLLISION", dist);
+            DispararFlash(Color.magenta);
+            EndEpisode();
         }
     }
 
@@ -465,7 +552,10 @@ public class HuskyAgent2 : Agent
         AplicarVelocidadAngular(leftWheels, leftVel);
         AplicarVelocidadAngular(rightWheels, rightVel);
 
-        // Penalización por volantazo 
+        // Acumular energía para métricas OE8
+        totalEnergyThisEpisode += Mathf.Abs(leftVel) + Mathf.Abs(rightVel);
+
+        // Penalización por volantazo
         AddReward(-Mathf.Abs(turnAction) * wEnergia);
 
         
@@ -489,10 +579,34 @@ public class HuskyAgent2 : Agent
         }
     }
 
-    // Añadir al bloque de using si no está ya:
-    // using Unity.MLAgents.Sensors;
+    // -----------------------------------------------------------------------
+    // REGISTRO DE MÉTRICAS EN CSV (OE8)
+    // Mismas columnas que HuskyHeuristic para comparación directa.
+    // -----------------------------------------------------------------------
+    private void InicializarCSV()
+    {
+        string path = Path.Combine(Application.persistentDataPath, csvFileName);
+        csvWriter   = new StreamWriter(path, append: false);
+        csvWriter.WriteLine("episodio;resultado;pasos;tiempo_s;distancia_final_m;" +
+                            "energia_total;tasa_exito_acum");
+        Debug.Log($"[HuskyAgent2] CSV de métricas: {path}");
+    }
 
-    // --- NUEVO MÉTODO: Lee el LiDAR y devuelve la penalización de proximidad ---
+    private void RegistrarEpisodio(string resultado, float distanciaFinal)
+    {
+        if (!guardarMetricas || csvWriter == null) return;
+
+        var   ci             = System.Globalization.CultureInfo.InvariantCulture;
+        float tiempoEpisodio = Time.time - episodeStartTime;
+        float tasaExito      = episodeCount > 0 ? (float)totalSuccesses / episodeCount : 0f;
+
+        csvWriter.WriteLine($"{episodeCount};{resultado};{stepCount};" +
+                            $"{tiempoEpisodio.ToString("F2", ci)};{distanciaFinal.ToString("F2", ci)};" +
+                            $"{totalEnergyThisEpisode.ToString("F2", ci)};{tasaExito.ToString("F3", ci)}");
+        csvWriter.Flush();
+    }
+
+    // --- Lee el LiDAR y devuelve la penalización de proximidad ---
     private float CalcularPenalizacionProximidad()
     {
         // Obtenemos todos los RayPerceptionSensor del agente (puede haber más de uno)

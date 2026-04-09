@@ -81,8 +81,29 @@ public class HuskyHeuristic : MonoBehaviour
     // -----------------------------------------------------------------------
     [Header("Condiciones de Episodio")]
     public float successDistance = 2.0f;
-    public int   envSeed         = 42;
-    public bool  useFixedSeed    = false;
+    public int   envSeed      = 42;
+    public bool  useFixedSeed = false;
+
+    [Tooltip("Activa el uso de la lista de semillas para evaluación controlada (OE8).")]
+    public bool  useSeedList = false;
+    [Tooltip("Lista de semillas. Rellenar con el botón derecho → Generar lista de semillas (OE8).")]
+    public int[] seedList = new int[0];
+    private int  seedIndex = 0;
+
+    [Tooltip("Número de semillas a generar automáticamente")]
+    public int numSeedsToGenerate = 100;
+    [Tooltip("Semilla maestra para generar la lista. Usar el MISMO valor en HuskyAgent2 y HuskyHeuristic para garantizar terrenos idénticos.")]
+    public int masterSeed = 12345;
+
+    [ContextMenu("Generar lista de semillas (OE8)")]
+    private void GenerarListaSemillas()
+    {
+        var rng = new System.Random(masterSeed);
+        seedList = new int[numSeedsToGenerate];
+        for (int i = 0; i < numSeedsToGenerate; i++)
+            seedList[i] = rng.Next(1, 1000000);
+        Debug.Log($"[HuskyHeuristic] Lista de {numSeedsToGenerate} semillas generada con masterSeed={masterSeed}.");
+    }
 
     [Header("Anti-Atasco")]
     public float stuckRadiusThreshold = 0.05f;
@@ -429,7 +450,31 @@ public class HuskyHeuristic : MonoBehaviour
         totalEnergyThisEpisode   = 0f;
         episodeStartTime         = Time.time;
 
-        int currentSeed = useFixedSeed ? envSeed : Random.Range(0, 999999);
+        int currentSeed;
+        if (useFixedSeed)
+        {
+            currentSeed = envSeed;                                // Modo depuración: semilla única
+        }
+        else if (useSeedList && seedList != null && seedList.Length > 0)
+        {
+            if (seedIndex >= seedList.Length)
+            {
+                // Test completado: cerrar CSV y parar el Play Mode
+                Debug.Log($"[HuskyHeuristic] ✅ Test OE8 completado: {seedList.Length} episodios evaluados. CSV guardado en: {System.IO.Path.Combine(Application.persistentDataPath, csvFileName)}");
+                if (csvWriter != null) { csvWriter.Flush(); csvWriter.Close(); csvWriter = null; }
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                return;
+            }
+            currentSeed = seedList[seedIndex];  // Modo evaluación: lista ordenada
+            seedIndex++;
+        }
+        else
+        {
+            currentSeed = Random.Range(0, 999999);                // Modo libre: aleatorio
+        }
+
         if (terrainGenerator != null) terrainGenerator.GenerateTerrain(currentSeed);
 
         // Spawn del rover en el centro del terreno
@@ -553,8 +598,8 @@ public class HuskyHeuristic : MonoBehaviour
         string path = Path.Combine(Application.persistentDataPath, csvFileName);
         csvWriter   = new StreamWriter(path, append: false);
         // Cabecera con las mismas métricas que el OE8 pide para el agente RL
-        csvWriter.WriteLine("episodio,resultado,pasos,tiempo_s,distancia_final_m," +
-                            "energia_total,tasa_exito_acum");
+        csvWriter.WriteLine("episodio;resultado;pasos;tiempo_s;distancia_final_m;" +
+                            "energia_total;tasa_exito_acum");
         Debug.Log($"[HuskyHeuristic] CSV de métricas: {path}");
     }
 
@@ -562,12 +607,13 @@ public class HuskyHeuristic : MonoBehaviour
     {
         if (!guardarMetricas || csvWriter == null) return;
 
+        var   ci             = System.Globalization.CultureInfo.InvariantCulture;
         float tiempoEpisodio = Time.time - episodeStartTime;
         float tasaExito      = episodeCount > 0 ? (float)totalSuccesses / episodeCount : 0f;
 
-        csvWriter.WriteLine($"{episodeCount},{resultado},{stepCount}," +
-                            $"{tiempoEpisodio:F2},{distanciaFinal:F2}," +
-                            $"{totalEnergyThisEpisode:F2},{tasaExito:F3}");
+        csvWriter.WriteLine($"{episodeCount};{resultado};{stepCount};" +
+                            $"{tiempoEpisodio.ToString("F2", ci)};{distanciaFinal.ToString("F2", ci)};" +
+                            $"{totalEnergyThisEpisode.ToString("F2", ci)};{tasaExito.ToString("F3", ci)}");
         csvWriter.Flush();
     }
 

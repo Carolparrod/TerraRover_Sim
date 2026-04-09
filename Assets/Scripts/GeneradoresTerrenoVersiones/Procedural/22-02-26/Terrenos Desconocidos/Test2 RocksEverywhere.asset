@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acab582014521184c9e852725fb407e8, type: 3}
-  m_Name: NivelPrimaria
+  m_Name: Test2 RocksEverywhere
   m_EditorClassIdentifier: Assembly-CSharp::TerrainFam4
   noiseScale: 0.1
   noiseAmplitude: 0.5
   maxSlopeDegrees: 0
-  obstacleDensity: 0.03
+  obstacleDensity: 0.1
   obstaclePrefabs:
   - {fileID: 7162602615161990867, guid: 520381c93e2f9734bab9f23f83618de2, type: 3}
   - {fileID: 2602975220198116835, guid: 10038933d2c22814dbaff12551a38547, type: 3}
