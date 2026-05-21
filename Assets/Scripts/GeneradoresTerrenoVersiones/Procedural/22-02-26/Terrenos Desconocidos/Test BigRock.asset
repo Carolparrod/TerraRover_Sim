@@ -10,15 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acab582014521184c9e852725fb407e8, type: 3}
-  m_Name: TerrainFam4
+  m_Name: Test BigRock
   m_EditorClassIdentifier: Assembly-CSharp::TerrainFam4
-  noiseScale: 0.01
-  noiseAmplitude: 0
+  noiseScale: 0.1
+  noiseAmplitude: 0.5
   maxSlopeDegrees: 0
-  obstacleDensity: 0
-  obstaclePrefabs: []
-  hillScale: 0.01
-  hillAmplitude: 0
+  obstacleDensity: 0.04
+  obstaclePrefabs:
+  - {fileID: 2502387328024878176, guid: ac9c042bbd3a788408b1722e8935ad02, type: 3}
+  - {fileID: 7671634546778148147, guid: 31848289fafd62e4aae313dabac03697, type: 3}
+  - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
+  hillScale: 2
+  hillAmplitude: 4
   holeScale: 1
   holeDepth: 0
   holeSharpness: 1

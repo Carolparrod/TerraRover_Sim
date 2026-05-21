@@ -550,7 +550,8 @@ public class HuskyHeuristic : MonoBehaviour
             var drive        = wheel.xDrive;
             drive.stiffness  = 0f;
             drive.damping    = 10f;
-            drive.forceLimit = 1000f;
+            //drive.forceLimit = 1000f;
+            drive.forceLimit = 2000f;
             wheel.xDrive     = drive;
         }
     }

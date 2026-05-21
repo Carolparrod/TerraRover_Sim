@@ -149,6 +149,7 @@ public class HuskyAgent2 : Agent
             drive.stiffness = 0f;
             drive.damping = 10f;
             drive.forceLimit = 1000f;
+            //drive.forceLimit = 2000f;
             wheel.xDrive = drive;
         }
     }

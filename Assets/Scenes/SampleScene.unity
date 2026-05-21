@@ -1629,6 +1629,10 @@ PrefabInstance:
       propertyPath: m_ParentAnchorPosition.x
       value: -0.0000019073486
       objectReference: {fileID: 0}
+    - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
+      propertyPath: stuckCheckInterval
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 8126085486559934407, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_ParentAnchorPosition.x
       value: -0.27749825
@@ -1639,7 +1643,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8672664225936646847, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1794,7 +1798,7 @@ PrefabInstance:
     - target: {fileID: 1148014242611601849, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: terrainFamily
       value: 
-      objectReference: {fileID: 11400000, guid: 7867277661884f445b0e9651ccb3d40f, type: 2}
+      objectReference: {fileID: 11400000, guid: 23e07d7c185a3384090078c348525074, type: 2}
     - target: {fileID: 2057227416788518394, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 24.6
@@ -1863,6 +1867,10 @@ PrefabInstance:
       propertyPath: m_ParentAnchorPosition.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5498588500284205270, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5923199778452110564, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_ParentAnchorPosition.x
       value: 0.27750015
@@ -1881,7 +1889,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: csvFileName
-      value: HuskyAgent2_metricas_BigRock.csv
+      value: HuskyAgent2_metricas_prueba.csv
+      objectReference: {fileID: 0}
+    - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
+      propertyPath: guardarMetricas
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
+      propertyPath: maxStuckPermitido
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
+      propertyPath: stuckCheckInterval
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8064726438451174232, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: seedList.Array.size
@@ -2294,10 +2314,10 @@ PrefabInstance:
     - target: {fileID: 8359735514822515389, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 5022602860645237092, guid: 186aeff609f2d0a47a4f7a020c370458, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 8359735514822515389, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_BehaviorType
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8672664225936646847, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_Name
@@ -2305,7 +2325,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8672664225936646847, guid: 1c1f5200c6ffa744dbd67a9e71d96d3e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3053,6 +3073,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 656260051257519429, guid: 3a43f994044142744a0e838270b630e5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4584218445509996522, guid: 3a43f994044142744a0e838270b630e5, type: 3}
       propertyPath: startPoint
       value: 
@@ -3060,10 +3084,14 @@ PrefabInstance:
     - target: {fileID: 4584218445509996522, guid: 3a43f994044142744a0e838270b630e5, type: 3}
       propertyPath: terrainFamily
       value: 
-      objectReference: {fileID: 11400000, guid: 7867277661884f445b0e9651ccb3d40f, type: 2}
+      objectReference: {fileID: 11400000, guid: 23e07d7c185a3384090078c348525074, type: 2}
+    - target: {fileID: 6813808993035208785, guid: 3a43f994044142744a0e838270b630e5, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6927485586185721084, guid: 3a43f994044142744a0e838270b630e5, type: 3}
       propertyPath: csvFileName
-      value: HuskyHeuristic_metricas_BigRock.csv
+      value: HuskyHeuristic_metricas_FL2000_BumpyGround.csv
       objectReference: {fileID: 0}
     - target: {fileID: 6927485586185721084, guid: 3a43f994044142744a0e838270b630e5, type: 3}
       propertyPath: useSeedList

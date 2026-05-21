@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acab582014521184c9e852725fb407e8, type: 3}
-  m_Name: Test3 HardTerrain
+  m_Name: Test HardTerrain
   m_EditorClassIdentifier: Assembly-CSharp::TerrainFam4
   noiseScale: 0.1
   noiseAmplitude: 1.5
