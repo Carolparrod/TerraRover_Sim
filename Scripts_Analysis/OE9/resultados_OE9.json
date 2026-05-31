@@ -1,0 +1,543 @@
+{
+  "A_intra": {
+    "RL_V3_sticky": {
+      "n": 100,
+      "baseline_rate": 87.0,
+      "perturbed_rate": 98.0,
+      "mcnemar_p": 0.0009765625,
+      "diff_pp": 11.0,
+      "diff_ci": [
+        10.38673607639125,
+        11.61326392360875
+      ],
+      "results_baseline": {
+        "SUCCESS": 87,
+        "STUCK": 8,
+        "COLLISION": 5
+      },
+      "results_perturbed": {
+        "SUCCESS": 98,
+        "COLLISION": 2
+      }
+    },
+    "RL_V3_fl2000": {
+      "n": 100,
+      "baseline_rate": 87.0,
+      "perturbed_rate": 93.0,
+      "mcnemar_p": 0.1795654296875,
+      "diff_pp": 6.0,
+      "diff_ci": [
+        5.27612553574532,
+        6.7238744642546795
+      ],
+      "results_baseline": {
+        "SUCCESS": 87,
+        "STUCK": 8,
+        "COLLISION": 5
+      },
+      "results_perturbed": {
+        "SUCCESS": 93,
+        "COLLISION": 5,
+        "STUCK": 2
+      }
+    },
+    "RL_BumpyGround_sticky": {
+      "n": 100,
+      "baseline_rate": 31.0,
+      "perturbed_rate": 17.0,
+      "mcnemar_p": 0.004343509674072266,
+      "diff_pp": -14.000000000000002,
+      "diff_ci": [
+        -14.877414747995498,
+        -13.122585252004503
+      ],
+      "results_baseline": {
+        "STUCK": 46,
+        "SUCCESS": 31,
+        "FALL": 16,
+        "COLLISION": 7
+      },
+      "results_perturbed": {
+        "STUCK": 59,
+        "FALL": 21,
+        "SUCCESS": 17,
+        "COLLISION": 3
+      }
+    },
+    "RL_BumpyGround_fl2000": {
+      "n": 100,
+      "baseline_rate": 31.0,
+      "perturbed_rate": 28.000000000000004,
+      "mcnemar_p": 0.629058837890625,
+      "diff_pp": -3.0,
+      "diff_ci": [
+        -3.805986699642122,
+        -2.194013300357878
+      ],
+      "results_baseline": {
+        "STUCK": 46,
+        "SUCCESS": 31,
+        "FALL": 16,
+        "COLLISION": 7
+      },
+      "results_perturbed": {
+        "STUCK": 52,
+        "SUCCESS": 28,
+        "FALL": 13,
+        "COLLISION": 7
+      }
+    },
+    "HEU_V3_sticky": {
+      "n": 100,
+      "baseline_rate": 89.0,
+      "perturbed_rate": 92.0,
+      "mcnemar_p": 0.5078125,
+      "diff_pp": 3.0,
+      "diff_ci": [
+        2.414947386981307,
+        3.5850526130186924
+      ],
+      "results_baseline": {
+        "SUCCESS": 89,
+        "STUCK": 10,
+        "COLLISION": 1
+      },
+      "results_perturbed": {
+        "SUCCESS": 92,
+        "STUCK": 7,
+        "COLLISION": 1
+      }
+    },
+    "HEU_V3_fl2000": {
+      "n": 100,
+      "baseline_rate": 89.0,
+      "perturbed_rate": 89.0,
+      "mcnemar_p": 1.0,
+      "diff_pp": 0.0,
+      "diff_ci": [
+        -0.392,
+        0.392
+      ],
+      "results_baseline": {
+        "SUCCESS": 89,
+        "STUCK": 10,
+        "COLLISION": 1
+      },
+      "results_perturbed": {
+        "SUCCESS": 89,
+        "STUCK": 9,
+        "COLLISION": 2
+      }
+    },
+    "HEU_BumpyGround_sticky": {
+      "n": 100,
+      "baseline_rate": 70.0,
+      "perturbed_rate": 73.0,
+      "mcnemar_p": 0.6476058959960938,
+      "diff_pp": 3.0,
+      "diff_ci": [
+        2.147681655717771,
+        3.852318344282229
+      ],
+      "results_baseline": {
+        "SUCCESS": 70,
+        "FALL": 15,
+        "STUCK": 10,
+        "COLLISION": 5
+      },
+      "results_perturbed": {
+        "SUCCESS": 73,
+        "FALL": 21,
+        "STUCK": 4,
+        "COLLISION": 2
+      }
+    },
+    "HEU_BumpyGround_fl2000": {
+      "n": 100,
+      "baseline_rate": 70.0,
+      "perturbed_rate": 74.0,
+      "mcnemar_p": 0.34375,
+      "diff_pp": 4.0,
+      "diff_ci": [
+        3.3851720240587615,
+        4.614827975941239
+      ],
+      "results_baseline": {
+        "SUCCESS": 70,
+        "FALL": 15,
+        "STUCK": 10,
+        "COLLISION": 5
+      },
+      "results_perturbed": {
+        "SUCCESS": 74,
+        "FALL": 13,
+        "COLLISION": 7,
+        "STUCK": 6
+      }
+    }
+  },
+  "B_inter": {
+    "V3_baseline": {
+      "n": 100,
+      "rl_rate": 87.0,
+      "heu_rate": 89.0,
+      "mcnemar_p": 0.8145294189453125,
+      "diff_pp": -2.0,
+      "diff_ci": [
+        -2.83063310793635,
+        -1.1693668920636502
+      ],
+      "n_both_success": 79,
+      "wilcoxon": {
+        "pasos": {
+          "p": 6.531502077718996e-13,
+          "r": 0.8088120573395365,
+          "median_a": 1580.0,
+          "median_b": 782.0,
+          "n": 79
+        },
+        "tiempo_s": {
+          "p": 6.532015369927776e-13,
+          "r": 0.8088120573395365,
+          "median_a": 15.8,
+          "median_b": 7.82,
+          "n": 79
+        },
+        "distancia_final_m": {
+          "p": 0.21324447000031022,
+          "r": 0.14003894937311911,
+          "median_a": 2.0,
+          "median_b": 1.99,
+          "n": 79
+        },
+        "energia_total": {
+          "p": 0.07851892129115462,
+          "r": 0.19794178151228486,
+          "median_a": 2378.23,
+          "median_b": 2223.0,
+          "n": 79
+        }
+      }
+    },
+    "V3_sticky": {
+      "n": 100,
+      "rl_rate": 98.0,
+      "heu_rate": 92.0,
+      "mcnemar_p": 0.0703125,
+      "diff_pp": 6.0,
+      "diff_ci": [
+        5.458245221525458,
+        6.541754778474542
+      ],
+      "n_both_success": 91,
+      "wilcoxon": {
+        "pasos": {
+          "p": 2.1978892234409266e-09,
+          "r": 0.6271324882442257,
+          "median_a": 960.0,
+          "median_b": 747.0,
+          "n": 91
+        },
+        "tiempo_s": {
+          "p": 2.145710317671723e-09,
+          "r": 0.6275424804345808,
+          "median_a": 9.6,
+          "median_b": 7.47,
+          "n": 91
+        },
+        "distancia_final_m": {
+          "p": 0.09495400533257824,
+          "r": 0.17504521599332729,
+          "median_a": 2.0,
+          "median_b": 1.99,
+          "n": 91
+        },
+        "energia_total": {
+          "p": 0.11428916731895716,
+          "r": 0.16554560894226533,
+          "median_a": 1995.23,
+          "median_b": 2073.0,
+          "n": 91
+        }
+      }
+    },
+    "V3_fl2000": {
+      "n": 100,
+      "rl_rate": 93.0,
+      "heu_rate": 89.0,
+      "mcnemar_p": 0.34375,
+      "diff_pp": 4.0,
+      "diff_ci": [
+        3.3851720240587615,
+        4.614827975941239
+      ],
+      "n_both_success": 86,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.003072292373372978,
+          "r": 0.3192292888408061,
+          "median_a": 1020.5,
+          "median_b": 897.5,
+          "n": 86
+        },
+        "tiempo_s": {
+          "p": 0.003051159318362767,
+          "r": 0.3194584938971942,
+          "median_a": 10.204999999999998,
+          "median_b": 8.975,
+          "n": 86
+        },
+        "distancia_final_m": {
+          "p": 0.0013618356800383954,
+          "r": 0.345347391803,
+          "median_a": 1.99,
+          "median_b": 1.99,
+          "n": 86
+        },
+        "energia_total": {
+          "p": 0.00012582494784337943,
+          "r": 0.4134837206569347,
+          "median_a": 2074.3,
+          "median_b": 2373.0,
+          "n": 86
+        }
+      }
+    },
+    "BumpyGround_baseline": {
+      "n": 100,
+      "rl_rate": 31.0,
+      "heu_rate": 70.0,
+      "mcnemar_p": 7.59715845788378e-09,
+      "diff_pp": -39.0,
+      "diff_ci": [
+        -40.13933166373976,
+        -37.86066833626025
+      ],
+      "n_both_success": 26,
+      "wilcoxon": {
+        "pasos": {
+          "p": 1.6391277313232422e-06,
+          "r": 0.9400787796065162,
+          "median_a": 1076.0,
+          "median_b": 696.5,
+          "n": 26
+        },
+        "tiempo_s": {
+          "p": 1.6391277313232422e-06,
+          "r": 0.9400787796065162,
+          "median_a": 10.760000000000002,
+          "median_b": 6.965,
+          "n": 26
+        },
+        "distancia_final_m": {
+          "p": 0.22674131694040445,
+          "r": 0.23706435466831108,
+          "median_a": 1.995,
+          "median_b": 1.99,
+          "n": 26
+        },
+        "energia_total": {
+          "p": 0.4082431197166443,
+          "r": 0.16218594756854157,
+          "median_a": 2051.85,
+          "median_b": 1931.325,
+          "n": 26
+        }
+      }
+    },
+    "BumpyGround_sticky": {
+      "n": 100,
+      "rl_rate": 17.0,
+      "heu_rate": 73.0,
+      "mcnemar_p": 1.724922288337538e-14,
+      "diff_pp": -56.00000000000001,
+      "diff_ci": [
+        -57.084926836242886,
+        -54.91507316375712
+      ],
+      "n_both_success": 14,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.0001220703125,
+          "r": 1.0267991663486926,
+          "median_a": 999.5,
+          "median_b": 646.5,
+          "n": 14
+        },
+        "tiempo_s": {
+          "p": 0.0001220703125,
+          "r": 1.0267991663486926,
+          "median_a": 9.995000000000001,
+          "median_b": 6.465,
+          "n": 14
+        },
+        "distancia_final_m": {
+          "p": 0.7054569861112734,
+          "r": 0.10101525445522108,
+          "median_a": 1.995,
+          "median_b": 1.99,
+          "n": 14
+        },
+        "energia_total": {
+          "p": 0.0579833984375,
+          "r": 0.5066801206185809,
+          "median_a": 1898.5349999999999,
+          "median_b": 1795.95,
+          "n": 14
+        }
+      }
+    },
+    "BumpyGround_fl2000": {
+      "n": 100,
+      "rl_rate": 28.000000000000004,
+      "heu_rate": 74.0,
+      "mcnemar_p": 2.2666313270747196e-12,
+      "diff_pp": -46.0,
+      "diff_ci": [
+        -47.05257657203645,
+        -44.94742342796356
+      ],
+      "n_both_success": 26,
+      "wilcoxon": {
+        "pasos": {
+          "p": 2.93690703989714e-05,
+          "r": 0.8194328668811595,
+          "median_a": 920.5,
+          "median_b": 680.0,
+          "n": 26
+        },
+        "tiempo_s": {
+          "p": 2.7792947104176387e-05,
+          "r": 0.8218904042140756,
+          "median_a": 9.205,
+          "median_b": 6.800000000000001,
+          "n": 26
+        },
+        "distancia_final_m": {
+          "p": 0.08670321877784014,
+          "r": 0.3359568760530704,
+          "median_a": 1.99,
+          "median_b": 1.99,
+          "n": 26
+        },
+        "energia_total": {
+          "p": 0.599547415971756,
+          "r": 0.10297106369869405,
+          "median_a": 1825.29,
+          "median_b": 1906.05,
+          "n": 26
+        }
+      }
+    }
+  },
+  "C_paired_clean": {
+    "BumpyGround_sticky_clean": {
+      "n_orig": 100,
+      "n_excluded": 26,
+      "n": 74,
+      "rl_rate": 22.972972972972975,
+      "heu_rate": 93.24324324324324,
+      "mcnemar_p": 2.2598589666245064e-13,
+      "diff_pp": -70.27027027027027,
+      "diff_ci": [
+        -71.69659325553455,
+        -68.843947285006
+      ],
+      "n_both_success": 14,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.0001220703125,
+          "r": 1.0267991663486926,
+          "median_a": 999.5,
+          "median_b": 646.5,
+          "n": 14
+        },
+        "tiempo_s": {
+          "p": 0.0001220703125,
+          "r": 1.0267991663486926,
+          "median_a": 9.995000000000001,
+          "median_b": 6.465,
+          "n": 14
+        },
+        "distancia_final_m": {
+          "p": 0.7054569861112734,
+          "r": 0.10101525445522108,
+          "median_a": 1.995,
+          "median_b": 1.99,
+          "n": 14
+        },
+        "energia_total": {
+          "p": 0.0579833984375,
+          "r": 0.5066801206185809,
+          "median_a": 1898.5349999999999,
+          "median_b": 1795.95,
+          "n": 14
+        }
+      },
+      "results_rl_clean": {
+        "STUCK": 54,
+        "SUCCESS": 17,
+        "COLLISION": 3
+      },
+      "results_heu_clean": {
+        "SUCCESS": 69,
+        "STUCK": 4,
+        "COLLISION": 1
+      }
+    },
+    "BumpyGround_fl2000_clean": {
+      "n_orig": 100,
+      "n_excluded": 17,
+      "n": 83,
+      "rl_rate": 32.53012048192771,
+      "heu_rate": 85.54216867469879,
+      "mcnemar_p": 1.3358203432289883e-12,
+      "diff_pp": -53.01204819277109,
+      "diff_ci": [
+        -54.24631683694088,
+        -51.7777795486013
+      ],
+      "n_both_success": 26,
+      "wilcoxon": {
+        "pasos": {
+          "p": 2.93690703989714e-05,
+          "r": 0.8194328668811595,
+          "median_a": 920.5,
+          "median_b": 680.0,
+          "n": 26
+        },
+        "tiempo_s": {
+          "p": 2.7792947104176387e-05,
+          "r": 0.8218904042140756,
+          "median_a": 9.205,
+          "median_b": 6.800000000000001,
+          "n": 26
+        },
+        "distancia_final_m": {
+          "p": 0.08670321877784014,
+          "r": 0.3359568760530704,
+          "median_a": 1.99,
+          "median_b": 1.99,
+          "n": 26
+        },
+        "energia_total": {
+          "p": 0.599547415971756,
+          "r": 0.10297106369869405,
+          "median_a": 1825.29,
+          "median_b": 1906.05,
+          "n": 26
+        }
+      },
+      "results_rl_clean": {
+        "STUCK": 51,
+        "SUCCESS": 27,
+        "COLLISION": 5
+      },
+      "results_heu_clean": {
+        "SUCCESS": 71,
+        "COLLISION": 6,
+        "STUCK": 6
+      }
+    }
+  }
+}

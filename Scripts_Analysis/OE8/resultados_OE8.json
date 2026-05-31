@@ -1,0 +1,475 @@
+{
+  "OE8": {
+    "V3_F3_02": {
+      "n": 100,
+      "n_excluded": 0,
+      "rl_success": 87,
+      "heu_success": 89,
+      "rl_rate": 87.0,
+      "heu_rate": 89.0,
+      "rl_ci": [
+        79.01964855992357,
+        92.2428325727595
+      ],
+      "heu_ci": [
+        81.3687034969197,
+        93.74580364293543
+      ],
+      "mcnemar_p": 0.8145294189453125,
+      "mcnemar_table": [
+        79,
+        10,
+        8,
+        3
+      ],
+      "diff_pp": -2.0,
+      "diff_ci": [
+        -2.83063310793635,
+        -1.1693668920636502
+      ],
+      "n_both_success": 79,
+      "wilcoxon": {
+        "pasos": {
+          "p": 6.531502077718996e-13,
+          "r": 0.8088120573395365,
+          "median_rl": 1580.0,
+          "median_heu": 782.0,
+          "n": 79
+        },
+        "tiempo_s": {
+          "p": 6.532015369927776e-13,
+          "r": 0.8088120573395365,
+          "median_rl": 15.8,
+          "median_heu": 7.82,
+          "n": 79
+        },
+        "distancia_final_m": {
+          "p": 0.21324447000031022,
+          "r": 0.14003894937311911,
+          "median_rl": 2.0,
+          "median_heu": 1.99,
+          "n": 79
+        },
+        "energia_total": {
+          "p": 0.07851892129115462,
+          "r": 0.19794178151228486,
+          "median_rl": 2378.23,
+          "median_heu": 2223.0,
+          "n": 79
+        }
+      },
+      "results_rl": {
+        "SUCCESS": 87,
+        "STUCK": 8,
+        "COLLISION": 5
+      },
+      "results_heu": {
+        "SUCCESS": 89,
+        "STUCK": 10,
+        "COLLISION": 1
+      },
+      "mcnemar_p_holm": 1.0,
+      "mcnemar_significant": false
+    },
+    "BigRock": {
+      "n": 100,
+      "n_excluded": 0,
+      "rl_success": 86,
+      "heu_success": 83,
+      "rl_rate": 86.0,
+      "heu_rate": 83.0,
+      "rl_ci": [
+        77.86281178903616,
+        91.47365634006086
+      ],
+      "heu_ci": [
+        74.45199523239887,
+        89.10643388594006
+      ],
+      "mcnemar_p": 0.6476058959960938,
+      "mcnemar_table": [
+        75,
+        8,
+        11,
+        6
+      ],
+      "diff_pp": 3.0,
+      "diff_ci": [
+        2.147681655717771,
+        3.852318344282229
+      ],
+      "n_both_success": 75,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.0008377701090604121,
+          "r": 0.3856705076554126,
+          "median_rl": 1043.0,
+          "median_heu": 869.0,
+          "n": 75
+        },
+        "tiempo_s": {
+          "p": 0.0008620554964124766,
+          "r": 0.3847531918241747,
+          "median_rl": 10.43,
+          "median_heu": 8.69,
+          "n": 75
+        },
+        "distancia_final_m": {
+          "p": 0.11982815693253576,
+          "r": 0.17961312416219424,
+          "median_rl": 1.99,
+          "median_heu": 1.99,
+          "n": 75
+        },
+        "energia_total": {
+          "p": 6.847024262415982e-05,
+          "r": 0.4597486191855781,
+          "median_rl": 2220.5,
+          "median_heu": 2342.2,
+          "n": 75
+        }
+      },
+      "results_rl": {
+        "SUCCESS": 86,
+        "COLLISION": 9,
+        "STUCK": 5
+      },
+      "results_heu": {
+        "SUCCESS": 83,
+        "STUCK": 15,
+        "COLLISION": 2
+      },
+      "mcnemar_p_holm": 1.0,
+      "mcnemar_significant": false
+    },
+    "HardTerrain": {
+      "n": 100,
+      "n_excluded": 0,
+      "rl_success": 95,
+      "heu_success": 90,
+      "rl_rate": 95.0,
+      "heu_rate": 90.0,
+      "rl_ci": [
+        88.82495307680807,
+        97.84563208456319
+      ],
+      "heu_ci": [
+        82.56343384950866,
+        94.47708629393249
+      ],
+      "mcnemar_p": 0.30175781249999994,
+      "mcnemar_table": [
+        85,
+        5,
+        10,
+        0
+      ],
+      "diff_pp": 5.0,
+      "diff_ci": [
+        4.247247716708877,
+        5.752752283291124
+      ],
+      "n_both_success": 85,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.047882886906736075,
+          "r": 0.21458829479079772,
+          "median_rl": 937.0,
+          "median_heu": 901.0,
+          "n": 85
+        },
+        "tiempo_s": {
+          "p": 0.04715024203810278,
+          "r": 0.21529785398320023,
+          "median_rl": 9.37,
+          "median_heu": 9.01,
+          "n": 85
+        },
+        "distancia_final_m": {
+          "p": 0.604917630455384,
+          "r": 0.056113588853885746,
+          "median_rl": 1.99,
+          "median_heu": 1.99,
+          "n": 85
+        },
+        "energia_total": {
+          "p": 0.24825650655669085,
+          "r": 0.12523336030325044,
+          "median_rl": 2467.46,
+          "median_heu": 2542.67,
+          "n": 85
+        }
+      },
+      "results_rl": {
+        "SUCCESS": 95,
+        "STUCK": 4,
+        "COLLISION": 1
+      },
+      "results_heu": {
+        "SUCCESS": 90,
+        "STUCK": 8,
+        "COLLISION": 2
+      },
+      "mcnemar_p_holm": 0.9052734374999998,
+      "mcnemar_significant": false
+    },
+    "BumpyGround": {
+      "n": 100,
+      "n_excluded": 0,
+      "rl_success": 31,
+      "heu_success": 70,
+      "rl_rate": 31.0,
+      "heu_rate": 70.0,
+      "rl_ci": [
+        22.779697212376036,
+        40.62605571948941
+      ],
+      "heu_ci": [
+        60.41514536665332,
+        78.10511470506724
+      ],
+      "mcnemar_p": 7.59715845788378e-09,
+      "mcnemar_table": [
+        26,
+        44,
+        5,
+        25
+      ],
+      "diff_pp": -39.0,
+      "diff_ci": [
+        -40.13933166373976,
+        -37.86066833626025
+      ],
+      "n_both_success": 26,
+      "wilcoxon": {
+        "pasos": {
+          "p": 1.6391277313232422e-06,
+          "r": 0.9400787796065162,
+          "median_rl": 1076.0,
+          "median_heu": 696.5,
+          "n": 26
+        },
+        "tiempo_s": {
+          "p": 1.6391277313232422e-06,
+          "r": 0.9400787796065162,
+          "median_rl": 10.760000000000002,
+          "median_heu": 6.965,
+          "n": 26
+        },
+        "distancia_final_m": {
+          "p": 0.22674131694040445,
+          "r": 0.23706435466831108,
+          "median_rl": 1.995,
+          "median_heu": 1.99,
+          "n": 26
+        },
+        "energia_total": {
+          "p": 0.4082431197166443,
+          "r": 0.16218594756854157,
+          "median_rl": 2051.85,
+          "median_heu": 1931.325,
+          "n": 26
+        }
+      },
+      "results_rl": {
+        "STUCK": 46,
+        "SUCCESS": 31,
+        "FALL": 16,
+        "COLLISION": 7
+      },
+      "results_heu": {
+        "SUCCESS": 70,
+        "FALL": 15,
+        "STUCK": 10,
+        "COLLISION": 5
+      },
+      "mcnemar_p_holm": 4.5582950747302675e-08,
+      "mcnemar_significant": true
+    },
+    "Complete": {
+      "n": 63,
+      "n_excluded": 37,
+      "rl_success": 18,
+      "heu_success": 48,
+      "rl_rate": 28.57142857142857,
+      "heu_rate": 76.19047619047619,
+      "rl_ci": [
+        18.90319198640081,
+        40.70271656740713
+      ],
+      "heu_ci": [
+        64.36433989030313,
+        85.00621632170939
+      ],
+      "mcnemar_p": 6.938353180885315e-08,
+      "mcnemar_table": [
+        16,
+        32,
+        2,
+        13
+      ],
+      "diff_pp": -47.61904761904761,
+      "diff_ci": [
+        -49.35939430415439,
+        -45.87870093394084
+      ],
+      "n_both_success": 16,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.000152587890625,
+          "r": 0.9467048619803428,
+          "median_rl": 980.5,
+          "median_heu": 561.5,
+          "n": 16
+        },
+        "tiempo_s": {
+          "p": 0.000152587890625,
+          "r": 0.9467048619803428,
+          "median_rl": 9.805,
+          "median_heu": 5.615,
+          "n": 16
+        },
+        "distancia_final_m": {
+          "p": 0.3434877153843966,
+          "r": 0.2368241242324992,
+          "median_rl": 2.0,
+          "median_heu": 1.99,
+          "n": 16
+        },
+        "energia_total": {
+          "p": 0.596588134765625,
+          "r": 0.1323283235894631,
+          "median_rl": 1550.595,
+          "median_heu": 1376.075,
+          "n": 16
+        }
+      },
+      "results_rl": {
+        "STUCK": 31,
+        "SUCCESS": 18,
+        "COLLISION": 13,
+        "FALL": 1
+      },
+      "results_heu": {
+        "SUCCESS": 48,
+        "STUCK": 7,
+        "COLLISION": 6,
+        "FALL": 2
+      },
+      "mcnemar_p_holm": 3.4691765904426575e-07,
+      "mcnemar_significant": true
+    },
+    "DeepHoles": {
+      "n": 100,
+      "n_excluded": 0,
+      "rl_success": 17,
+      "heu_success": 42,
+      "rl_rate": 17.0,
+      "heu_rate": 42.0,
+      "rl_ci": [
+        10.89356611405993,
+        25.548004767601128
+      ],
+      "heu_ci": [
+        32.798382674354734,
+        51.79351329695703
+      ],
+      "mcnemar_p": 4.12575900554657e-05,
+      "mcnemar_table": [
+        11,
+        31,
+        6,
+        52
+      ],
+      "diff_pp": -25.0,
+      "diff_ci": [
+        -26.086872577628125,
+        -23.913127422371875
+      ],
+      "n_both_success": 11,
+      "wilcoxon": {
+        "pasos": {
+          "p": 0.0048828125,
+          "r": 0.8486533877997874,
+          "median_rl": 685.0,
+          "median_heu": 593.0,
+          "n": 11
+        },
+        "tiempo_s": {
+          "p": 0.0048828125,
+          "r": 0.8486533877997874,
+          "median_rl": 6.85,
+          "median_heu": 5.93,
+          "n": 11
+        },
+        "distancia_final_m": {
+          "p": 0.359375,
+          "r": 0.2763522332096231,
+          "median_rl": 1.99,
+          "median_heu": 1.99,
+          "n": 11
+        },
+        "energia_total": {
+          "p": 0.1474609375,
+          "r": 0.4367567997770516,
+          "median_rl": 1485.08,
+          "median_heu": 1779.0,
+          "n": 11
+        }
+      },
+      "results_rl": {
+        "FALL": 43,
+        "STUCK": 35,
+        "SUCCESS": 17,
+        "COLLISION": 5
+      },
+      "results_heu": {
+        "FALL": 47,
+        "SUCCESS": 42,
+        "STUCK": 10,
+        "COLLISION": 1
+      },
+      "mcnemar_p_holm": 0.0001650303602218628,
+      "mcnemar_significant": true
+    }
+  },
+  "SCI_variant_BumpyGround": {
+    "n": 100,
+    "sci100_success": 31,
+    "sci200_success": 40,
+    "sci100_rate": 31.0,
+    "sci200_rate": 40.0,
+    "sci100_ci": [
+      22.779697212376036,
+      40.62605571948941
+    ],
+    "sci200_ci": [
+      30.940128643245895,
+      49.79974132089382
+    ],
+    "mcnemar_p": 0.0783538818359375,
+    "mcnemar_table": [
+      25,
+      15,
+      6,
+      54
+    ],
+    "diff_pp": 9.0,
+    "diff_ci": [
+      8.11930763600449,
+      9.880692363995509
+    ],
+    "results_sci100": {
+      "STUCK": 46,
+      "SUCCESS": 31,
+      "FALL": 16,
+      "COLLISION": 7
+    },
+    "results_sci200": {
+      "SUCCESS": 40,
+      "STUCK": 35,
+      "FALL": 13,
+      "COLLISION": 12
+    }
+  }
+}

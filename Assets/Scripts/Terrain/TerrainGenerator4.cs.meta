@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ffe88556d37d66047abe4c7a7069676b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - terrainFamily: {fileID: 11400000, guid: db84dfba67c0c6741a90a97665a2acf4, type: 2}
+  - startPoint: {instanceID: 0}
+  - goalPoint: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
