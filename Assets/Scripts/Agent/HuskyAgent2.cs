@@ -22,7 +22,6 @@ public class HuskyAgent2 : Agent
     [Header("Parámetros de Normalización (OE3)")]
     public float maxLinearSpeed = 1.5f;
     public float maxAngularSpeed = 2f;
-    // Nota: Ya no usamos maxDistanceToTarget para evitar colapso en mapas grandes [Problema 2]
 
     [Header("Condiciones de Episodio (OE4)")]
     public float successDistance = 2.0f;
@@ -51,11 +50,11 @@ public class HuskyAgent2 : Agent
     }
 
     [Header("Detección de Atasco (OE4 - Anti-Hacking)")]
-    public float stuckRadiusThreshold = 0.1f; // 10 cm mínimos
-    public float minSpinAngle = 2.0f;         // 2 grados mínimos para considerarlo giro
-    public int stuckCheckInterval = 50;       // Comprobamos cada 50 pasos (1 segundo)
-    public int maxStuckPermitido = 3;         // Falla si está 3 segundos atascado
-    public int maxSpinPermitido = 10;          // Falla si está 4 segundos girando sin acercarse
+    public float stuckRadiusThreshold = 0.1f; 
+    public float minSpinAngle = 2.0f;         
+    public int stuckCheckInterval = 50;       
+    public int maxStuckPermitido = 3;         
+    public int maxSpinPermitido = 10;          
 
     private int checkTimer = 0;
     private int stuckCounter = 0;
@@ -70,8 +69,8 @@ public class HuskyAgent2 : Agent
     [Header("Pesos de Recompensa (OE5)")]
     public float wAvance = 1.0f;
     public float wEstabilidad = 0.05f;
-    public float wEnergia = 0.0001f; // Reducido para evitar parálisis
-    public float wAlineacion = 0.01f; // NUEVO (Fase 2): Castigo por desalineación
+    public float wEnergia = 0.0001f; 
+    public float wAlineacion = 0.01f; 
 
     private Vector3 startPosition;
     private Quaternion startRotation;
@@ -220,29 +219,11 @@ public class HuskyAgent2 : Agent
         baseLink.angularVelocity = Vector3.zero;
 
 
-        // 4. Spawn Aleatorio del Objetivo (Problema 3 - Generalización)
-        /*float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float randomDist = Random.Range(5f, terrainWidthX * 0.4f);
-
-        Vector3 offset = new Vector3(Mathf.Cos(randomAngle) * randomDist, 0, Mathf.Sin(randomAngle) * randomDist);
-        Vector3 newTargetPos = resetPos + offset;
-
-        
-        if (terrainGenerator != null)
-        {
-            
-            Terrain t = terrainGenerator.GetComponent<Terrain>();
-            newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
-        }
-
-        target.position = newTargetPos;
-        previousDistanceToTarget = Vector3.Distance(transform.position, target.position);*/
-        // 3. Spawn Aleatorio del Objetivo (A prueba de balas definitivo) 
+        // 3. Spawn Aleatorio del Objetivo 
         Vector3 newTargetPos = Vector3.zero;
         bool posicionValida = false;
         int intentos = 0;
 
-        // Subimos la paciencia a 50 intentos
         while (!posicionValida && intentos < 50)
         {
             float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
@@ -256,10 +237,8 @@ public class HuskyAgent2 : Agent
                 newTargetPos.y = t.SampleHeight(newTargetPos) + t.transform.position.y + 0.5f;
             }
 
-            // Obligamos a Unity a registrar las colisiones
             Physics.SyncTransforms();
 
-            // Lanzamos una esfera de TRES METROS (mucho más grande que tu aura)
             Collider[] colliders = Physics.OverlapSphere(newTargetPos, 3.0f);
             bool chocaConRoca = false;
 
@@ -288,7 +267,7 @@ public class HuskyAgent2 : Agent
         target.position = newTargetPos;
         previousDistanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // NUEVO: Reset de la memoria anti-atascos de la lógica del profesor
+        //Reset de la memoria anti-atascos de la lógica del profesor
         checkTimer = 0;
         stuckCounter = 0;
         spinCounter = 0;
@@ -303,24 +282,19 @@ public class HuskyAgent2 : Agent
     private IEnumerator FlashGround(Color flashColor, float duration)
     {
         if (groundTerrain == null || groundTerrain.materialTemplate == null) yield break;
-
-        // Ponemos el color de golpe (rojo o verde)
         groundTerrain.materialTemplate.color = flashColor;
 
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            // Lo vamos difuminando de vuelta a su color original
             groundTerrain.materialTemplate.color = Color.Lerp(flashColor, originalGroundColor, elapsed / duration);
             yield return null;
         }
-
-        // Nos aseguramos de que termine en su color exacto
         groundTerrain.materialTemplate.color = originalGroundColor;
     }
 
-    // Función para disparar el color fácilmente
+    
     private void DispararFlash(Color colorFlash)
     {
         if (groundTerrain != null && groundTerrain.materialTemplate != null)
@@ -380,7 +354,7 @@ public class HuskyAgent2 : Agent
             AddReward(-(tilt * tilt) * wEstabilidad);
         }
 
-        //4. NUEVO (Fase 2): Penalización estricta por Desalineación (Gradiente continuo)
+        //4. Penalización estricta por Desalineación (Gradiente continuo)
         float currentSpeed = baseLink.linearVelocity.magnitude;
 
         if (currentSpeed > 0.1f)
@@ -388,11 +362,8 @@ public class HuskyAgent2 : Agent
             Vector3 moveDirection = baseLink.linearVelocity.normalized;
             float alignment = Vector3.Dot(transform.forward, moveDirection);
 
-            // Si no está alineado casi perfectamente hacia adelante (margen de ~36 grados)
             if (alignment < 0.5f) //if (alignment < 0.8f)
             {
-                // La fórmula (alignment - 1.0f) garantiza que la penalización sea progresiva.
-                // Cuanto más se desvíe del 1.0 perfecto, mayor será el castigo (negativo).
                 AddReward((alignment - 1.0f) * currentSpeed * wAlineacion);
             }
         }
@@ -424,7 +395,7 @@ public class HuskyAgent2 : Agent
                 AddReward((lookAlignment - 1.0f) * 0.002f);
             }
         }*/
-        // 6. NUEVO (Fase 3 - OE6): Penalización progresiva por proximidad a obstáculos
+        // 6. (Fase 3 - OE6): Penalización progresiva por proximidad a obstáculos
         float penalizacionLidar = CalcularPenalizacionProximidad();
         if (penalizacionLidar < 0f)
         {
@@ -524,10 +495,9 @@ public class HuskyAgent2 : Agent
         }
     }
 
-    // --- NUEVO: LÓGICA DE SEGURIDAD (Prevención de Daños) ---
+    // --- LÓGICA DE SEGURIDAD (Prevención de Daños) ---
     private void OnCollisionEnter(Collision collision)
     {
-        // Si tocamos cualquier cosa etiquetada como "Obstaculo"...
         if (collision.gameObject.CompareTag("Obstacle"))
         {
             AddReward(-1.0f);
@@ -614,41 +584,30 @@ public class HuskyAgent2 : Agent
     // --- Lee el LiDAR y devuelve la penalización de proximidad ---
     private float CalcularPenalizacionProximidad()
     {
-        // Obtenemos todos los RayPerceptionSensor del agente (puede haber más de uno)
+        
         var raySensors = GetComponentsInChildren<Unity.MLAgents.Sensors.RayPerceptionSensorComponent3D>();
 
-        float maxThreat = 0f; // Guardamos la amenaza MÁS CERCANA de todos los rayos
+        float maxThreat = 0f; 
 
         foreach (var sensorComp in raySensors)
         {
-            // Pedimos el último resultado de percepción del sensor
+            
             var output = sensorComp.RaySensor?.RayPerceptionOutput;
             if (output == null) continue;
 
             foreach (var rayResult in output.RayOutputs)
             {
-                // rayResult.HitFraction: 0.0 = impacto justo en la nariz, 1.0 = no tocó nada
-                // Solo nos importan los rayos que DETECTARON un obstáculo
+                
                 if (!rayResult.HasHit) continue;
 
-                // Opcional pero recomendado: filtrar por tag para ignorar el suelo
-                // Si tu LiDAR ya tiene DetectableTags configurado solo para "Obstacle", no es necesario
-                // if (rayResult.HitGameObject != null && !rayResult.HitGameObject.CompareTag("Obstacle")) continue;
-
-                // Calculamos la "amenaza": cuanto más cerca (HitFraction → 0), mayor la amenaza
+                
                 float threat = 1.0f - rayResult.HitFraction;
-
-                // Solo nos importa si supera el umbral de peligro
-                // proximityDangerThreshold define desde qué distancia relativa empieza el castigo
                 float normalizedThreat = Mathf.InverseLerp(1.0f - proximityDangerThreshold, 1.0f, threat);
 
                 if (normalizedThreat > maxThreat)
                     maxThreat = normalizedThreat;
             }
         }
-
-        // La penalización es cuadrática para que sea suave de lejos y fuerte de cerca
-        // maxThreat=0 → penalización=0 | maxThreat=1 → penalización=wProximidad
         return -(maxThreat * maxThreat) * wProximidad;
     }
 }
